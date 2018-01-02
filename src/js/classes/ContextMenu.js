@@ -2,6 +2,7 @@ import ContextMenuOperations from './ContextMenuOperations';
 import defaults from '../defaults';
 import ContextMenuHtml5Builder from './ContextMenuHtml5Builder';
 import ContextMenuEventHandler from './ContextMenuEventHandler';
+import ContextMenuEventListener from './ContextMenuEventListener';
 
 export default class ContextMenu {
     /**
@@ -192,6 +193,12 @@ export default class ContextMenu {
         if (!options._hasContext) {
             this.namespaces[options.selector] = options.ns;
         }
+        if(typeof options.eventListeners === 'undefined'){
+            options.listeners = {
+                document: new ContextMenuEventListener(document)
+            };
+        }
+
         this.menus[options.ns] = options;
 
         // default to right click
@@ -200,30 +207,29 @@ export default class ContextMenu {
         }
 
         if (!this.initialized) {
-            const itemClick = options.itemClickEvent === 'click' ? 'click.contextMenu' : 'mouseup.contextMenu';
+            const itemClick = options.itemClickEvent === 'click' ? 'click' : 'mouseup';
             const contextMenuItemObj = {
                 // 'mouseup.contextMenu': this.handler.itemClick,
                 // 'click.contextMenu': this.handler.itemClick,
-                'contextmenu:focus.contextMenu': this.handler.focusItem,
-                'contextmenu:blur.contextMenu': this.handler.blurItem,
-                'contextmenu.contextMenu': this.handler.abortevent,
-                'mouseenter.contextMenu': this.handler.itemMouseenter,
-                'mouseleave.contextMenu': this.handler.itemMouseleave
+
             };
             contextMenuItemObj[itemClick] = this.handler.itemClick;
 
             // make sure item click is registered first
-            $(document)
-                .on({
-                    'contextmenu:hide.contextMenu': this.handler.hideMenu,
-                    'prevcommand.contextMenu': this.handler.prevItem,
-                    'nextcommand.contextMenu': this.handler.nextItem,
-                    'contextmenu.contextMenu': this.handler.abortevent,
-                    'mouseenter.contextMenu': this.handler.menuMouseenter,
-                    'mouseleave.contextMenu': this.handler.menuMouseleave
-                }, '.context-menu-list')
-                .on('mouseup.contextMenu', '.context-menu-input', this.handler.inputClick)
-                .on(contextMenuItemObj, '.context-menu-item');
+            options.listeners.document
+                .on('contextmenu:hide', '.context-menu-list', this.handler.hideMenu)
+                .on('prevcommand', '.context-menu-list', this.handler.prevItem)
+                .on('nextcommand', '.context-menu-list', this.handler.nextItem)
+                .on('contextmenu', '.context-menu-list', this.handler.abortevent)
+                .on('mouseenter', '.context-menu-list', this.handler.menuMouseenter)
+                .on('mouseleave', '.context-menu-list', this.handler.menuMouseleave)
+                .on('mouseup', '.context-menu-input', this.handler.inputClick)
+                .on(itemClick, '.context-menu-item')
+                .on('contextmenu:focus', '.context-menu-item', this.handler.focusItem)
+                .on('contextmenu:blur', '.context-menu-item', this.handler.blurItem)
+                .on('contextmenu', '.context-menu-item', this.handler.abortevent)
+                .on('mouseenter', '.context-menu-item', this.handler.itemMouseenter)
+                .on('mouseleave', '.context-menu-item', this.handler.itemMouseleave);
 
             this.initialized = true;
         }
@@ -404,4 +410,23 @@ export default class ContextMenu {
 
         return data;
     }
+
+
+    /**
+     * Triggers an event on the instance's element.
+     *
+     * @param el Element to trigger on
+     * @param eventName Name of the event to trigger.
+     * @param data Optional event data to be added to the event object.
+     *
+     * @return Whether the default action of the event may be executed, ie. returns false if
+     *         preventDefault() has been called.
+     */
+    triggerEvent(el, eventName, data = {}) {
+        const event = new CustomEvent(eventName, { detail: data });
+        el.dispatchEvent(event);
+        return !event.defaultPrevented;
+    },
+
+
 }
