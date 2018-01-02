@@ -127,7 +127,7 @@ export default class ContextMenu {
 
                 $visibleMenu = $('.context-menu-list').filter(':visible');
                 if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is($(o.context).find(o.selector))) {
-                    $visibleMenu.trigger('contextmenu:hide', {force: true});
+                    this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', {force: true});
                 }
 
                 if (this.menus[o.ns].$menu) {
@@ -155,7 +155,7 @@ export default class ContextMenu {
         } else if (this.namespaces[options.selector]) {
             $visibleMenu = $('.context-menu-list').filter(':visible');
             if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is(options.selector)) {
-                $visibleMenu.trigger('contextmenu:hide', {force: true});
+                this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', {force: true});
             }
 
             if (this.menus[this.namespaces[options.selector]].$menu) {
@@ -193,9 +193,10 @@ export default class ContextMenu {
         if (!options._hasContext) {
             this.namespaces[options.selector] = options.ns;
         }
-        if(typeof options.eventListeners === 'undefined'){
+        if (typeof options.eventListeners === 'undefined') {
             options.listeners = {
-                document: new ContextMenuEventListener(document)
+                document: new ContextMenuEventListener(document),
+                contextMenuAutoHide: new ContextMenuEventListener(document)
             };
         }
 
@@ -208,12 +209,6 @@ export default class ContextMenu {
 
         if (!this.initialized) {
             const itemClick = options.itemClickEvent === 'click' ? 'click' : 'mouseup';
-            const contextMenuItemObj = {
-                // 'mouseup.contextMenu': this.handler.itemClick,
-                // 'click.contextMenu': this.handler.itemClick,
-
-            };
-            contextMenuItemObj[itemClick] = this.handler.itemClick;
 
             // make sure item click is registered first
             options.listeners.document
@@ -224,7 +219,7 @@ export default class ContextMenu {
                 .on('mouseenter', '.context-menu-list', this.handler.menuMouseenter)
                 .on('mouseleave', '.context-menu-list', this.handler.menuMouseleave)
                 .on('mouseup', '.context-menu-input', this.handler.inputClick)
-                .on(itemClick, '.context-menu-item')
+                .on(itemClick, '.context-menu-item', this.handler.itemClick)
                 .on('contextmenu:focus', '.context-menu-item', this.handler.focusItem)
                 .on('contextmenu:blur', '.context-menu-item', this.handler.blurItem)
                 .on('contextmenu', '.context-menu-item', this.handler.abortevent)
@@ -234,22 +229,23 @@ export default class ContextMenu {
             this.initialized = true;
         }
 
+        options.listeners.context = new ContextMenuEventListener(options.context.get(0));
+
         // engage native contextmenu event
-        options.context
-            .on('contextmenu' + options.ns, options.selector, options, this.handler.contextmenu);
+        options.listeners.context.on('contextmenu', options.selector, this.handler.contextmenu);
 
         switch (options.trigger) {
             case 'hover':
-                options.context
-                    .on('mouseenter' + options.ns, options.selector, options, this.handler.mouseenter)
-                    .on('mouseleave' + options.ns, options.selector, options, this.handler.mouseleave);
+                options.listeners.context
+                    .on('mouseenter', options.selector, this.handler.mouseenter, options)
+                    .on('mouseleave', options.selector, this.handler.mouseleave, options);
                 break;
 
             case 'left':
-                options.context.on('click' + options.ns, options.selector, options, this.handler.click);
+                options.listeners.context.on('click', options.selector, this.handler.click);
                 break;
             case 'touchstart':
-                options.context.on('touchstart' + options.ns, options.selector, options, this.handler.click);
+                options.listeners.context.on('touchstart' + options.ns, options.selector, options, this.handler.click);
                 break;
             /*
                      default:
@@ -411,22 +407,18 @@ export default class ContextMenu {
         return data;
     }
 
-
     /**
      * Triggers an event on the instance's element.
      *
-     * @param el Element to trigger on
-     * @param eventName Name of the event to trigger.
-     * @param data Optional event data to be added to the event object.
+     * @param {Element} el Element to trigger on
+     * @param {string} eventName Name of the event to trigger.
+     * @param {Object} data Optional event data to be added to the event object.
      *
-     * @return Whether the default action of the event may be executed, ie. returns false if
-     *         preventDefault() has been called.
+     * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
      */
     triggerEvent(el, eventName, data = {}) {
         const event = new CustomEvent(eventName, { detail: data });
         el.dispatchEvent(event);
         return !event.defaultPrevented;
-    },
-
-
+    }
 }

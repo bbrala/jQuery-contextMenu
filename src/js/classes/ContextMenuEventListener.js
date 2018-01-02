@@ -31,6 +31,7 @@ class ContextMenuEventListener {
         this.context = null;
         this.el = null;
         this.events = null;
+        this.eventData = null;
     }
 
     /**
@@ -38,8 +39,14 @@ class ContextMenuEventListener {
      *
      * The arguments are the same as for on(), but when no callback is given, all callbacks for the
      * given event and class are discarded.
+     * @param {string} eventName
+     * @param {string} selector
+     * @param {Function} callback
+     *
+     * @returns {ContextMenuEventListener}
      */
     off(eventName, selector, callback) {
+        console.log('Off', eventName, selector, callback);
         if (typeof selector !== 'string') {
             callback = selector;
             selector = '';
@@ -61,15 +68,16 @@ class ContextMenuEventListener {
         } else {
             this.events[eventName][selector] = [];
         }
+        return this;
     }
 
     /**
      * Starts listening to an event.
      *
-     * @param eventName Name of the event to listen to, in lower-case.
-     * @param selector Optional CSS selector. If given, only events inside a child element matching
+     * @param {string} eventName Name of the event to listen to, in lower-case.
+     * @param {string} selector Optional CSS selector. If given, only events inside a child element matching
      *                 the selector are caught.
-     * @param callback Callback to invoke when the event is caught.
+     * @param {Function} callback Callback to invoke when the event is caught.
      *
      * Alternatively, the arguments may be provided using a map to start listening to multiple
      * events at once. Here, the keys of the map are eventNames and the values are callbacks.
@@ -79,17 +87,20 @@ class ContextMenuEventListener {
      *         'blur': this._blurred,
      *         'click .some-input': this._inputClicked,
      *     })
+     * @param {Object} data
+     * @return {this}
      */
-    on(eventName, selector, callback) {
+    on(eventName, selector, callback, data = {}) {
+        console.log('On', eventName, selector, callback, data, typeof this.events);
         if (typeof eventName !== 'string') {
             const eventsMap = eventName;
             for (let key in eventsMap) {
                 if (eventsMap.hasOwnProperty(key)) {
                     const split = key.split(' ');
                     if (split.length > 1) {
-                        this.on(split[0], split[1], eventsMap[key]);
+                        this.on(split[0], split[1], eventsMap[key], data);
                     } else {
-                        this.on(split[0], eventsMap[key]);
+                        this.on(split[0], '', eventsMap[key], data);
                     }
                 }
             }
@@ -101,6 +112,8 @@ class ContextMenuEventListener {
             selector = '';
         }
 
+        console.log(this);
+        console.log(this.events);
         if (!this.events.hasOwnProperty(eventName)) {
             const useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
             this.el.addEventListener(eventName, this._onEvent, useCapture);
@@ -115,6 +128,16 @@ class ContextMenuEventListener {
         if (this.events[eventName][selector].indexOf(callback) < 0) {
             this.events[eventName][selector].push(callback);
         }
+
+        if (data) {
+            if (!this.eventData.hasOwnProperty(eventName)) {
+                this.eventData[eventName] = {};
+            }
+            if (!this.eventData[eventName].hasOwnProperty(selector)) {
+                this.eventData[eventName][selector] = data;
+            }
+        }
+
         return this;
     }
 
@@ -136,9 +159,18 @@ class ContextMenuEventListener {
 
         let target = event.target;
         const events = this.events[event.type.toLowerCase()];
+        const eventData = this.eventData[event.type.toLowerCase()];
         if (isPropagationStopped === false) {
             while (target && target !== this.el) {
                 for (let selector in events) {
+                    if (
+                        selector &&
+                        eventData.hasOwnProperty(selector) &&
+                        Helper.matchesSelector(target, selector)
+                    ) {
+                        event.data = eventData[selector];
+                    }
+
                     if (
                         selector &&
                         events.hasOwnProperty(selector) &&

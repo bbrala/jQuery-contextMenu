@@ -1,5 +1,6 @@
 import ContextMenuHelper from './ContextMenuHelper';
 import ContextMenuItemTypes from './ContextMenuItemTypes';
+import ContextMenuEventListener from './ContextMenuEventListener';
 
 export default class ContextMenuOperations {
     /**
@@ -27,7 +28,7 @@ export default class ContextMenuOperations {
         const css = {};
 
         // hide any open menus
-        $('#context-menu-layer').trigger('mousedown');
+        menuData.manager.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
 
         // backreference for callbacks
         menuData.$trigger = $trigger;
@@ -62,7 +63,7 @@ export default class ContextMenuOperations {
 
         // position and show context menu
         menuData.$menu.css(css)[menuData.animation.show](menuData.animation.duration, () => {
-            $trigger.trigger('contextmenu:visible');
+            menuData.manager.triggerEvent($trigger.get(0), 'contextmenu:visible');
 
             menuData.manager.operations.activated(e, menuData);
             menuData.events.activated($trigger, e, menuData);
@@ -73,11 +74,12 @@ export default class ContextMenuOperations {
             .addClass('context-menu-active');
 
         // register key handler
-        $(document).off('keydown.contextMenu').on('keydown.contextMenu', menuData, menuData.manager.handler.key);
+
+        menuData.eventListeners.document.off('keydown').on('keydown', menuData.manager.handler.key, menuData);
         // register autoHide handler
         if (menuData.autoHide) {
             // mouse position handler
-            $(document).on('mousemove.contextMenuAutoHide', (e) => {
+            menuData.eventListeners.contextMenuAutoHide.on('mousemove', (e) => {
                 // need to capture the offset on mousemove,
                 // since the page might've been scrolled since activation
                 const pos = $trigger.offset();
@@ -88,7 +90,7 @@ export default class ContextMenuOperations {
                     /* Additional hover check after short time, you might just miss the edge of the menu */
                     setTimeout(() => {
                         if (!menuData.hovering && menuData.$menu !== null && typeof menuData.$menu !== 'undefined') {
-                            menuData.$menu.trigger('contextmenu:hide');
+                            menuData.manager.triggerEvent(menuData.$menu.get(0), 'contextmenu:hide');
                         }
                     }, 50);
                 }
@@ -142,13 +144,15 @@ export default class ContextMenuOperations {
 
         // remove handle
         menuData.manager.handler.$currentTrigger = null;
-        // remove selected
+        // remove selected @todo trigger multiple?
         menuData.$menu.find('.' + menuData.classNames.hover).trigger('contextmenu:blur');
         menuData.$selected = null;
         // collapse all submenus
         menuData.$menu.find('.' + menuData.classNames.visible).removeClass(menuData.classNames.visible);
         // unregister key and mouse handlers
-        $(document).off('.contextMenuAutoHide').off('keydown.contextMenu');
+        menuData.manager.eventListeners.contextMenuAutoHide.destruct();
+        menuData.manager.eventListeners.document.off('keydown');
+
         // hide menu
         if (menuData.$menu) {
             menuData.$menu[menuData.animation.hide](menuData.animation.duration, () => {
@@ -175,7 +179,7 @@ export default class ContextMenuOperations {
                 }
 
                 setTimeout(() => {
-                    $trigger.trigger('contextmenu:hidden');
+                    menuData.manager.triggerEvent($trigger.get(0), 'contextmenu:hidden');
                 }, 10);
             });
         }
@@ -264,6 +268,10 @@ export default class ContextMenuOperations {
                 'contextMenuRoot': rootMenuData,
                 'contextMenuKey': key
             });
+
+            if (typeof item.eventListeners === 'undefined') {
+                item.eventListeners = {};
+            }
 
             // register accesskey
             // NOTE: the accesskey attribute should be applicable to any element, but Safari5 and Chrome13 still can't do that
@@ -402,12 +410,13 @@ export default class ContextMenuOperations {
 
                 // disable key listener in <input>
                 if (item.type && item.type !== ContextMenuItemTypes.submenu && item.type !== ContextMenuItemTypes.html && item.type !== ContextMenuItemTypes.separator) {
-                    $input
+                    item.eventListeners.input = new ContextMenuEventListener($input.get(0));
+                    item.eventListeners.input
                         .on('focus', rootMenuData.manager.handler.focusInput)
                         .on('blur', rootMenuData.manager.handler.blurInput);
 
                     if (item.events) {
-                        $input.on(item.events, currentMenuData);
+                        item.eventListeners.input.on(item.events, currentMenuData);
                     }
                 }
 
@@ -439,6 +448,7 @@ export default class ContextMenuOperations {
                 // browsers support user-select: none,
                 // IE has a special event for text-selection
                 // browsers supporting neither will not be preventing text-selection
+                // @todo what event?
                 $t.on('selectstart.disableTextSelect', currentMenuData.manager.handler.abortevent);
             }
         });
@@ -601,7 +611,10 @@ export default class ContextMenuOperations {
                 'background-color': '#000'
             })
             .data('contextMenuRoot', menuData)
-            .insertBefore(this)
+            .insertBefore(this);
+
+        menuData.manager.eventListeners.layer = new ContextMenuEventListener($layer.get(0));
+        menuData.manager.eventListeners.layer
             .on('contextmenu', menuData.manager.handler.abortevent)
             .on('mousedown', menuData.manager.handler.layerClick);
 
