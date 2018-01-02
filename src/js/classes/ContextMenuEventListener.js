@@ -7,13 +7,21 @@ const CAPTURED_EVENTS = ['blur', 'focus', 'mouseenter', 'mouseleave', 'click', '
  * Listens to events dispatched to an element or its children.
  *
  * @param {Element} el The element to listen to.
+ * @param {ContextMenuData} contextMenuData ContextMenuData of menu this is bound to
  * @param {Element} context Optional context in which to execute the callbacks.
  */
 class ContextMenuEventListener {
-    constructor(el, context) {
-        this.context = context || null;
+    constructor(el, contextMenuData) {
+        if (!window.instanceId) {
+            window.instanceId = 0;
+        }
+        this.instanceId = window.instanceId++;
+        console.log('New listener', el, this.instanceId);
+
+        this.contextMenuData = contextMenuData || null;
         this.el = el;
         this.events = {};
+        this.eventData = {};
         this._onEvent = this._onEvent.bind(this);
     }
 
@@ -24,11 +32,12 @@ class ContextMenuEventListener {
      */
     destruct() {
         Object.keys(this.events).forEach(function (eventName) {
-            var useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
+            let useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
             this.el.removeEventListener(eventName, this._onEvent, useCapture);
         }, this);
 
         this.context = null;
+        this.contextMenuData = null;
         this.el = null;
         this.events = null;
         this.eventData = null;
@@ -40,13 +49,13 @@ class ContextMenuEventListener {
      * The arguments are the same as for on(), but when no callback is given, all callbacks for the
      * given event and class are discarded.
      * @param {string} eventName
-     * @param {string} selector
-     * @param {Function} callback
+     * @param {string?} selector
+     * @param {Function?} callback
      *
      * @returns {ContextMenuEventListener}
      */
     off(eventName, selector, callback) {
-        console.log('Off', eventName, selector, callback);
+        // console.log('Off', eventName, selector, callback);
         if (typeof selector !== 'string') {
             callback = selector;
             selector = '';
@@ -66,7 +75,9 @@ class ContextMenuEventListener {
                 }
             }
         } else {
-            this.events[eventName][selector] = [];
+            if (this.events.hasOwnProperty(eventName) && this.events[eventName].hasOwnProperty(selector)) {
+                this.events[eventName][selector] = [];
+            }
         }
         return this;
     }
@@ -90,8 +101,8 @@ class ContextMenuEventListener {
      * @param {Object} data
      * @return {this}
      */
-    on(eventName, selector, callback, data = {}) {
-        console.log('On', eventName, selector, callback, data, typeof this.events);
+    on(eventName, selector, callback, data = false) {
+        console.log('On', eventName, selector, this.instanceId);
         if (typeof eventName !== 'string') {
             const eventsMap = eventName;
             for (let key in eventsMap) {
@@ -112,8 +123,6 @@ class ContextMenuEventListener {
             selector = '';
         }
 
-        console.log(this);
-        console.log(this.events);
         if (!this.events.hasOwnProperty(eventName)) {
             const useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
             this.el.addEventListener(eventName, this._onEvent, useCapture);
@@ -141,6 +150,10 @@ class ContextMenuEventListener {
         return this;
     }
 
+    /**
+     * @param {Event} event
+     * @private
+     */
     _onEvent(event) {
         let isPropagationStopped = false;
         let stopPropagation = event.stopPropagation;
@@ -148,11 +161,12 @@ class ContextMenuEventListener {
             stopPropagation.call(event);
             isPropagationStopped = true;
         };
-
         const context = this.context;
+        event._contextMenuData = this.contextMenuData;
 
         function callAll(callbacks) {
             for (let i = 0; i < callbacks.length; i++) {
+                console.log()
                 callbacks[i].call(context, event);
             }
         }
@@ -165,10 +179,11 @@ class ContextMenuEventListener {
                 for (let selector in events) {
                     if (
                         selector &&
+                        eventData &&
                         eventData.hasOwnProperty(selector) &&
                         Helper.matchesSelector(target, selector)
                     ) {
-                        event.data = eventData[selector];
+                        event._extraContextMenuData = eventData[selector];
                     }
 
                     if (
@@ -176,6 +191,8 @@ class ContextMenuEventListener {
                         events.hasOwnProperty(selector) &&
                         Helper.matchesSelector(target, selector)
                     ) {
+                        console.log('Context', target, selector);
+                        this.context = target;
                         callAll(events[selector]);
                     }
                 }

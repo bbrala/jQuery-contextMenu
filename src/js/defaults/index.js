@@ -20,6 +20,7 @@ import {determinePosition, positionSubmenu, position} from './position';
  * @property {?boolean} isInput - We are currently originating events from an input.
  * @property {Object<string, ContextMenuItem>} inputs - Inputs defined in the menu.
  * @property {Object<string, ContextMenuItemTypeCallback>} types - Custom ContextMenuItemTypes, key is the {@link ContextMenuItem} type property, value is a {@link ContextMenuItemTypeCallback} callback.
+ * @property {Object<string, ContextMenuEventListener>} listeners - All defined ContextMenuEventListener for this menu
  *
  * @property {boolean} hovering Currently hovering, root menu only.
  */

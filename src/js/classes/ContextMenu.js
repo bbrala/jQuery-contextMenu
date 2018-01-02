@@ -193,10 +193,10 @@ export default class ContextMenu {
         if (!options._hasContext) {
             this.namespaces[options.selector] = options.ns;
         }
-        if (typeof options.eventListeners === 'undefined') {
+        if (typeof options.listeners === 'undefined') {
             options.listeners = {
-                document: new ContextMenuEventListener(document),
-                contextMenuAutoHide: new ContextMenuEventListener(document)
+                document: new ContextMenuEventListener(document, options),
+                contextMenuAutoHide: new ContextMenuEventListener(document, options)
             };
         }
 
@@ -229,7 +229,7 @@ export default class ContextMenu {
             this.initialized = true;
         }
 
-        options.listeners.context = new ContextMenuEventListener(options.context.get(0));
+        options.listeners.context = new ContextMenuEventListener(options.context.get(0), options);
 
         // engage native contextmenu event
         options.listeners.context.on('contextmenu', options.selector, this.handler.contextmenu);
@@ -237,15 +237,15 @@ export default class ContextMenu {
         switch (options.trigger) {
             case 'hover':
                 options.listeners.context
-                    .on('mouseenter', options.selector, this.handler.mouseenter, options)
-                    .on('mouseleave', options.selector, this.handler.mouseleave, options);
+                    .on('mouseenter', options.selector, this.handler.mouseenter)
+                    .on('mouseleave', options.selector, this.handler.mouseleave);
                 break;
 
             case 'left':
                 options.listeners.context.on('click', options.selector, this.handler.click);
                 break;
             case 'touchstart':
-                options.listeners.context.on('touchstart' + options.ns, options.selector, options, this.handler.click);
+                options.listeners.context.on('touchstart', options.selector, this.handler.click);
                 break;
             /*
                      default:
@@ -417,6 +417,7 @@ export default class ContextMenu {
      * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
      */
     triggerEvent(el, eventName, data = {}) {
+        console.log('Trigger', eventName, el, data);
         const event = new CustomEvent(eventName, { detail: data });
         el.dispatchEvent(event);
         return !event.defaultPrevented;

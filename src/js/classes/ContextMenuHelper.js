@@ -3,7 +3,7 @@
  * @classdesc Few helper static functions
  */
 export default class ContextMenuHelper {
-    static matchedSelector(el, selector) {
+    static matchesSelector(el, selector) {
         const method =
             el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;
         return method.call(el, selector);

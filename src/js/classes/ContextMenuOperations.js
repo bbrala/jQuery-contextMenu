@@ -24,11 +24,14 @@ export default class ContextMenuOperations {
      * @param {number} y
      */
     show(e, menuData, x, y) {
-        const $trigger = $(this);
+        const $trigger = $(e.target);
         const css = {};
 
         // hide any open menus
-        menuData.manager.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
+        let layer = document.getElementById('#context-menu-layer');
+        if (layer) {
+            menuData.manager.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
+        }
 
         // backreference for callbacks
         menuData.$trigger = $trigger;
@@ -74,12 +77,11 @@ export default class ContextMenuOperations {
             .addClass('context-menu-active');
 
         // register key handler
-
-        menuData.eventListeners.document.off('keydown').on('keydown', menuData.manager.handler.key, menuData);
+        menuData.listeners.document.off('keydown').on('keydown', menuData.manager.handler.key);
         // register autoHide handler
         if (menuData.autoHide) {
             // mouse position handler
-            menuData.eventListeners.contextMenuAutoHide.on('mousemove', (e) => {
+            menuData.listeners.contextMenuAutoHide.on('mousemove', (e) => {
                 // need to capture the offset on mousemove,
                 // since the page might've been scrolled since activation
                 const pos = $trigger.offset();
@@ -150,8 +152,8 @@ export default class ContextMenuOperations {
         // collapse all submenus
         menuData.$menu.find('.' + menuData.classNames.visible).removeClass(menuData.classNames.visible);
         // unregister key and mouse handlers
-        menuData.manager.eventListeners.contextMenuAutoHide.destruct();
-        menuData.manager.eventListeners.document.off('keydown');
+        menuData.listeners.contextMenuAutoHide.destruct();
+        menuData.listeners.document.off('keydown');
 
         // hide menu
         if (menuData.$menu) {
@@ -269,8 +271,8 @@ export default class ContextMenuOperations {
                 'contextMenuKey': key
             });
 
-            if (typeof item.eventListeners === 'undefined') {
-                item.eventListeners = {};
+            if (typeof item.listeners === 'undefined') {
+                item.listeners = {};
             }
 
             // register accesskey
@@ -410,13 +412,13 @@ export default class ContextMenuOperations {
 
                 // disable key listener in <input>
                 if (item.type && item.type !== ContextMenuItemTypes.submenu && item.type !== ContextMenuItemTypes.html && item.type !== ContextMenuItemTypes.separator) {
-                    item.eventListeners.input = new ContextMenuEventListener($input.get(0));
-                    item.eventListeners.input
+                    item.listeners.input = new ContextMenuEventListener($input.get(0), rootMenuData);
+                    item.listeners.input
                         .on('focus', rootMenuData.manager.handler.focusInput)
                         .on('blur', rootMenuData.manager.handler.blurInput);
 
                     if (item.events) {
-                        item.eventListeners.input.on(item.events, currentMenuData);
+                        item.listeners.input.on(item.events, currentMenuData);
                     }
                 }
 
@@ -491,7 +493,7 @@ export default class ContextMenuOperations {
         });
         // identify width of nested menus
         $menu.find('> li > ul').each((index, element) => {
-            e.data.manager.operations.resize(e, $(element), true);
+            e._contextMenuData.manager.operations.resize(e, $(element), true);
         });
         // reset and apply changes in the end because nested
         // elements' widths wouldn't be calculatable otherwise
@@ -613,8 +615,8 @@ export default class ContextMenuOperations {
             .data('contextMenuRoot', menuData)
             .insertBefore(this);
 
-        menuData.manager.eventListeners.layer = new ContextMenuEventListener($layer.get(0));
-        menuData.manager.eventListeners.layer
+        menuData.listeners.layer = new ContextMenuEventListener($layer.get(0), menuData);
+        menuData.listeners.layer
             .on('contextmenu', menuData.manager.handler.abortevent)
             .on('mousedown', menuData.manager.handler.layerClick);
 

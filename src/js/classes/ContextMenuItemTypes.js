@@ -46,6 +46,7 @@
  * @property {string} options - Specifies the options of the `select` element.
  * @property {Number} height - The height in pixels `<textarea>` element. If not specified, the height is defined by CSS.
  * @property {Object<string, ContextMenuItem>} items - Items to show in a sub-menu. You can nest as many as you like.
+ * @property {Object<string, ContextMenuEventListener>} listeners - ContextMenuEventListener on this item.
  */
 
 /**
