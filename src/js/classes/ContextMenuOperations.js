@@ -456,7 +456,7 @@ export default class ContextMenuOperations {
         });
         // attach contextMenu to <body> (to bypass any possible overflow:hidden issues on parents of the trigger element)
         if (!currentMenuData.$node) {
-            currentMenuData.$menu.css('display', 'none').addClass('context-menu-rootMenuData');
+            currentMenuData.$menu.css('display', 'none').addClass('context-menu-root');
         }
         currentMenuData.$menu.appendTo(currentMenuData.appendTo || document.body);
     }

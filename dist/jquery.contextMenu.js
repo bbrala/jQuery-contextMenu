@@ -13,7 +13,7 @@
  * Licensed under
  *   MIT License http://www.opensource.org/licenses/mit-license
  * 
- * Date: 2018-01-02T19:57:35.264Z
+ * Date: 2018-01-03T10:19:24.212Z
  * 
  * 
  */(function webpackUniversalModuleDefinition(root, factory) {
@@ -130,10 +130,12 @@ var ContextMenuEventListener = function () {
     _createClass(ContextMenuEventListener, [{
         key: 'destruct',
         value: function destruct() {
-            Object.keys(this.events).forEach(function (eventName) {
-                var useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
-                this.el.removeEventListener(eventName, this._onEvent, useCapture);
-            }, this);
+            if (this.events !== null) {
+                Object.keys(this.events).forEach(function (eventName) {
+                    var useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
+                    this.el.removeEventListener(eventName, this._onEvent, useCapture);
+                }, this);
+            }
 
             this.context = null;
             this.contextMenuData = null;
@@ -230,15 +232,7 @@ var ContextMenuEventListener = function () {
                 stopPropagation.call(event);
                 isPropagationStopped = true;
             };
-            var context = this.context;
             event._contextMenuData = this.contextMenuData;
-
-            function callAll(callbacks) {
-                for (var i = 0; i < callbacks.length; i++) {
-                    console.log();
-                    callbacks[i].call(context, event);
-                }
-            }
 
             var target = event.target;
             var events = this.events[event.type.toLowerCase()];
@@ -251,9 +245,8 @@ var ContextMenuEventListener = function () {
                         }
 
                         if (selector && events.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
-                            console.log('Context', target, selector);
                             this.context = target;
-                            callAll(events[selector]);
+                            this.callAll(events[selector]);
                         }
                     }
                     target = target.parentElement;
@@ -261,7 +254,14 @@ var ContextMenuEventListener = function () {
             }
 
             if (!isPropagationStopped && events.hasOwnProperty('')) {
-                callAll(events['']);
+                this.callAll(events['']);
+            }
+        }
+    }, {
+        key: 'callAll',
+        value: function callAll(callbacks) {
+            for (var i = 0; i < callbacks.length; i++) {
+                callbacks[i].call(this.context, event);
             }
         }
     }]);
@@ -837,8 +837,7 @@ var ContextMenu = function () {
         value: function triggerEvent(el, eventName) {
             var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-            console.log('Trigger', eventName, el, data);
-            var event = new CustomEvent(eventName, { detail: data });
+            var event = new CustomEvent(eventName, { detail: data, bubbles: true, cancelable: true });
             el.dispatchEvent(event);
             return !event.defaultPrevented;
         }
@@ -1229,7 +1228,7 @@ var ContextMenuOperations = function () {
             });
 
             if (!currentMenuData.$node) {
-                currentMenuData.$menu.css('display', 'none').addClass('context-menu-rootMenuData');
+                currentMenuData.$menu.css('display', 'none').addClass('context-menu-root');
             }
             currentMenuData.$menu.appendTo(currentMenuData.appendTo || document.body);
         }
@@ -1917,9 +1916,7 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'layerClick',
         value: function layerClick(e) {
-            var $this = $(this);
-
-            var root = $this.data('contextMenuRoot');
+            var root = e._contextMenuData;
 
             if (root === null || typeof root === 'undefined') {
                 throw new Error('No ContextMenuData found');
@@ -1949,7 +1946,7 @@ var ContextMenuEventHandler = function () {
                         sel.removeAllRanges();
                         sel.addRange(range);
                     }
-                    $(target).trigger(e);
+                    root.manager.triggerEvent(target, e);
                     root.$layer.show();
                 }
 
@@ -2296,7 +2293,16 @@ var ContextMenuEventHandler = function () {
 
             var targetMenu = currentMenuData.$menu ? currentMenuData : rootMenuData;
 
-            targetMenu.$menu.children('.' + rootMenuData.classNames.hover).trigger('contextmenu:blur', { data: targetMenu, originalEvent: e }).children('.hover').trigger('contextmenu:blur', { data: targetMenu, originalEvent: e });
+            var children = targetMenu.$menu.children('.' + rootMenuData.classNames.hover);
+
+            children.each(function (i, e) {
+                rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', { data: targetMenu, originalEvent: e });
+            });
+
+            var hoveredChildren = children.children('.hover');
+            hoveredChildren.each(function (i, e) {
+                rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', { data: targetMenu, originalEvent: e });
+            });
 
             if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
                 currentMenuData.$selected = null;

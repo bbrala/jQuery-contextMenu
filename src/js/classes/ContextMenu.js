@@ -417,8 +417,7 @@ export default class ContextMenu {
      * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
      */
     triggerEvent(el, eventName, data = {}) {
-        console.log('Trigger', eventName, el, data);
-        const event = new CustomEvent(eventName, { detail: data });
+        const event = new CustomEvent(eventName, { detail: data, bubbles: true, cancelable: true });
         el.dispatchEvent(event);
         return !event.defaultPrevented;
     }

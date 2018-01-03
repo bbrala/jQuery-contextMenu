@@ -31,10 +31,12 @@ class ContextMenuEventListener {
      * Removes all event listeners and cleans up all references.
      */
     destruct() {
-        Object.keys(this.events).forEach(function (eventName) {
-            let useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
-            this.el.removeEventListener(eventName, this._onEvent, useCapture);
-        }, this);
+        if(this.events !== null) {
+            Object.keys(this.events).forEach(function (eventName) {
+                let useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
+                this.el.removeEventListener(eventName, this._onEvent, useCapture);
+            }, this);
+        }
 
         this.context = null;
         this.contextMenuData = null;
@@ -161,15 +163,7 @@ class ContextMenuEventListener {
             stopPropagation.call(event);
             isPropagationStopped = true;
         };
-        const context = this.context;
         event._contextMenuData = this.contextMenuData;
-
-        function callAll(callbacks) {
-            for (let i = 0; i < callbacks.length; i++) {
-                console.log()
-                callbacks[i].call(context, event);
-            }
-        }
 
         let target = event.target;
         const events = this.events[event.type.toLowerCase()];
@@ -191,9 +185,8 @@ class ContextMenuEventListener {
                         events.hasOwnProperty(selector) &&
                         Helper.matchesSelector(target, selector)
                     ) {
-                        console.log('Context', target, selector);
                         this.context = target;
-                        callAll(events[selector]);
+                        this.callAll(events[selector]);
                     }
                 }
                 target = target.parentElement;
@@ -201,7 +194,13 @@ class ContextMenuEventListener {
         }
 
         if (!isPropagationStopped && events.hasOwnProperty('')) {
-            callAll(events['']);
+            this.callAll(events['']);
+        }
+    }
+
+    callAll(callbacks) {
+        for (let i = 0; i < callbacks.length; i++) {
+            callbacks[i].call(this.context, event);
         }
     }
 }

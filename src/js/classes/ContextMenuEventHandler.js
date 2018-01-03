@@ -264,9 +264,8 @@ export default class ContextMenuEventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     layerClick(e) {
-        let $this = $(this);
         /** @var ContextMenuData **/
-        let root = $this.data('contextMenuRoot');
+        let root = e._contextMenuData;
 
         if (root === null || typeof root === 'undefined') {
             throw new Error('No ContextMenuData found');
@@ -299,7 +298,7 @@ export default class ContextMenuEventHandler {
                     sel.removeAllRanges();
                     sel.addRange(range);
                 }
-                $(target).trigger(e);
+                root.manager.triggerEvent(target, e);
                 root.$layer.show();
             }
 
@@ -729,12 +728,17 @@ export default class ContextMenuEventHandler {
         // make sure only one item is selected
         let targetMenu = (currentMenuData.$menu ? currentMenuData : rootMenuData);
         // @todo trigger?
-        targetMenu.$menu
-            .children('.' + rootMenuData.classNames.hover)
-            .trigger('contextmenu:blur', {data: targetMenu, originalEvent: e})
-            .children('.hover')
-            .trigger('contextmenu:blur', {data: targetMenu, originalEvent: e});
+        let children = targetMenu.$menu
+            .children('.' + rootMenuData.classNames.hover);
 
+        children.each((i, e) => {
+            rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', {data: targetMenu, originalEvent: e})
+        });
+
+        let hoveredChildren = children.children('.hover');
+        hoveredChildren.each((i, e) => {
+            rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', {data: targetMenu, originalEvent: e})
+        });
 
         if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
             currentMenuData.$selected = null;
