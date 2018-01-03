@@ -31,7 +31,7 @@ class ContextMenuEventListener {
      * Removes all event listeners and cleans up all references.
      */
     destruct() {
-        if(this.events !== null) {
+        if (this.events !== null) {
             Object.keys(this.events).forEach(function (eventName) {
                 let useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
                 this.el.removeEventListener(eventName, this._onEvent, useCapture);
@@ -163,44 +163,44 @@ class ContextMenuEventListener {
             stopPropagation.call(event);
             isPropagationStopped = true;
         };
-        event._contextMenuData = this.contextMenuData;
+
+        if (event.detail.data) {
+            event._contextMenuData = event.detail.data;
+        } else {
+            event._contextMenuData = this.contextMenuData;
+        }
 
         let target = event.target;
         const events = this.events[event.type.toLowerCase()];
         const eventData = this.eventData[event.type.toLowerCase()];
-        if (isPropagationStopped === false) {
-            while (target && target !== this.el) {
-                for (let selector in events) {
-                    if (
-                        selector &&
-                        eventData &&
-                        eventData.hasOwnProperty(selector) &&
-                        Helper.matchesSelector(target, selector)
-                    ) {
-                        event._extraContextMenuData = eventData[selector];
-                    }
 
-                    if (
-                        selector &&
-                        events.hasOwnProperty(selector) &&
-                        Helper.matchesSelector(target, selector)
-                    ) {
-                        this.context = target;
-                        this.callAll(events[selector]);
-                    }
+        // eslint-disable-next-line no-unmodified-loop-condition
+        while (target && target !== this.el && isPropagationStopped === false) {
+            for (let selector in events) {
+                if (
+                    selector && eventData && eventData.hasOwnProperty(selector) && Helper.matchesSelector(target, selector)) {
+                    event._extraContextMenuData = eventData[selector];
                 }
-                target = target.parentElement;
+
+                if (selector && events.hasOwnProperty(selector) && Helper.matchesSelector(target, selector)) {
+                    this.context = target;
+                    this.callAll(events[selector], event, this.context);
+                }
+            }
+            target = target.parentElement;
+            if (isPropagationStopped === true) {
+                break;
             }
         }
-
-        if (!isPropagationStopped && events.hasOwnProperty('')) {
-            this.callAll(events['']);
+        if (isPropagationStopped === false && events.hasOwnProperty('')) {
+            console.log('calling all');
+            this.callAll(events[''], event, this.context);
         }
     }
 
-    callAll(callbacks) {
+    callAll(callbacks, event, context) {
         for (let i = 0; i < callbacks.length; i++) {
-            callbacks[i].call(this.context, event);
+            callbacks[i].call(context, event);
         }
     }
 }

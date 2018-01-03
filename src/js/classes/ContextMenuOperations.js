@@ -147,6 +147,7 @@ export default class ContextMenuOperations {
         // remove handle
         menuData.manager.handler.$currentTrigger = null;
         // remove selected @todo trigger multiple?
+        console.log('Blur hide');
         menuData.$menu.find('.' + menuData.classNames.hover).trigger('contextmenu:blur');
         menuData.$selected = null;
         // collapse all submenus
@@ -157,7 +158,8 @@ export default class ContextMenuOperations {
 
         // hide menu
         if (menuData.$menu) {
-            menuData.$menu[menuData.animation.hide](menuData.animation.duration, () => {
+            menuData.$menu[menuData.animation.hide](menuData.animation.duration, function () {
+                let manager = menuData.manager;
                 // tear down dynamically built menu after animation is completed.
                 if (menuData.build) {
                     menuData.$menu.remove();
@@ -168,20 +170,18 @@ export default class ContextMenuOperations {
                             case 'build':
                             case 'trigger':
                                 return true;
-
                             default:
                                 menuData[key] = undefined;
                                 try {
                                     delete menuData[key];
-                                } catch (e) {
-                                }
+                                } catch (e) {}
                                 return true;
                         }
                     });
                 }
 
-                setTimeout(() => {
-                    menuData.manager.triggerEvent($trigger.get(0), 'contextmenu:hidden');
+                setTimeout(function () {
+                    manager.triggerEvent($trigger.get(0), 'contextmenu:hidden');
                 }, 10);
             });
         }

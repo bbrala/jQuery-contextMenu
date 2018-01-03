@@ -41,6 +41,7 @@ module.exports = {
                 include: path.resolve(__dirname, './src/js'),
                 exclude: /node_modules/,
                 options: {
+                    emitWarning: true,
                     formatter: require('eslint-friendly-formatter')
                 }
             },

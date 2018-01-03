@@ -217,14 +217,17 @@ export default class ContextMenu {
                 .on('nextcommand', '.context-menu-list', this.handler.nextItem)
                 .on('contextmenu', '.context-menu-list', this.handler.abortevent)
                 .on('mouseenter', '.context-menu-list', this.handler.menuMouseenter)
-                .on('mouseleave', '.context-menu-list', this.handler.menuMouseleave)
-                .on('mouseup', '.context-menu-input', this.handler.inputClick)
+                .on('mouseleave', '.context-menu-list', this.handler.menuMouseleave);
+
+            options.listeners.document
                 .on(itemClick, '.context-menu-item', this.handler.itemClick)
                 .on('contextmenu:focus', '.context-menu-item', this.handler.focusItem)
                 .on('contextmenu:blur', '.context-menu-item', this.handler.blurItem)
                 .on('contextmenu', '.context-menu-item', this.handler.abortevent)
                 .on('mouseenter', '.context-menu-item', this.handler.itemMouseenter)
                 .on('mouseleave', '.context-menu-item', this.handler.itemMouseleave);
+
+            options.listeners.document.on('mouseup', '.context-menu-input', this.handler.inputClick);
 
             this.initialized = true;
         }
@@ -413,11 +416,14 @@ export default class ContextMenu {
      * @param {Element} el Element to trigger on
      * @param {string} eventName Name of the event to trigger.
      * @param {Object} data Optional event data to be added to the event object.
+     * @param {boolean} bubbles
+     * @param {boolean} cancelable
      *
      * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
      */
-    triggerEvent(el, eventName, data = {}) {
-        const event = new CustomEvent(eventName, { detail: data, bubbles: true, cancelable: true });
+    triggerEvent(el, eventName, data = {}, bubbles = true, cancelable = true) {
+        console.log('Trigger', eventName, 'on', el);
+        const event = new CustomEvent(eventName, {detail: data, bubbles: bubbles, cancelable: cancelable});
         el.dispatchEvent(event);
         return !event.defaultPrevented;
     }
