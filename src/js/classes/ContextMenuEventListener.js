@@ -1,7 +1,7 @@
 'use strict';
 import Helper from './ContextMenuHelper';
 
-const CAPTURED_EVENTS = ['blur', 'focus', 'mouseenter', 'mouseleave', 'click', 'mouseup', 'mousedown', 'selectstart'];
+const NOT_CAPTURED_EVENTS = [];// ['blur', 'focus', 'mouseenter', 'mouseleave', 'click', 'mouseup', 'mousedown', 'selectstart'];
 
 /**
  * Listens to events dispatched to an element or its children.
@@ -33,7 +33,8 @@ class ContextMenuEventListener {
     destruct() {
         if (this.events !== null) {
             Object.keys(this.events).forEach(function (eventName) {
-                let useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
+                // let useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
+                let useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
                 this.el.removeEventListener(eventName, this._onEvent, useCapture);
             }, this);
         }
@@ -126,7 +127,7 @@ class ContextMenuEventListener {
         }
 
         if (!this.events.hasOwnProperty(eventName)) {
-            const useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
+            const useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
             this.el.addEventListener(eventName, this._onEvent, useCapture);
 
             this.events[eventName] = {};
@@ -157,6 +158,8 @@ class ContextMenuEventListener {
      * @private
      */
     _onEvent(event) {
+        console.log('Handling event', event.type, event);
+
         let isPropagationStopped = false;
         let stopPropagation = event.stopPropagation;
         event.stopPropagation = function () {
@@ -171,11 +174,19 @@ class ContextMenuEventListener {
         }
 
         let target = event.target;
+
+        console.log(event.target);
+
         const events = this.events[event.type.toLowerCase()];
         const eventData = this.eventData[event.type.toLowerCase()];
 
+        if (event.type === 'contextmenu:focus') {
+            console.group('focusstack');
+        }
         // eslint-disable-next-line no-unmodified-loop-condition
         while (target && target !== this.el && isPropagationStopped === false) {
+            console.log('find target for ' + event.type, target);
+
             for (let selector in events) {
                 if (
                     selector && eventData && eventData.hasOwnProperty(selector) && Helper.matchesSelector(target, selector)) {
@@ -184,6 +195,7 @@ class ContextMenuEventListener {
 
                 if (selector && events.hasOwnProperty(selector) && Helper.matchesSelector(target, selector)) {
                     this.context = target;
+                    console.log('find target for ' + event.type + '- FOUND ' + selector, target);
                     this.callAll(events[selector], event, this.context);
                 }
             }
@@ -191,6 +203,9 @@ class ContextMenuEventListener {
             if (isPropagationStopped === true) {
                 break;
             }
+        }
+        if (event.type === 'contextmenu:focus') {
+            console.groupEnd();
         }
         if (isPropagationStopped === false && events.hasOwnProperty('')) {
             console.log('calling all');

@@ -205,20 +205,22 @@ export default class ContextMenuEventHandler {
         e._contextMenuData.manager.handler.hoveract.pageX = e.pageX;
         e._contextMenuData.manager.handler.hoveract.pageY = e.pageY;
         e._contextMenuData.manager.handler.hoveract.data = e._contextMenuData;
-        let eventListener = new ContextMenuEventListener(document, e._contextMenuData);
-        eventListener.on('mousemove', e._contextMenuData.manager.handler.mousemove);
-        e._contextMenuData.manager.handler.hoveract.timer = setTimeout(() => {
-            e._contextMenuData.manager.handler.hoveract.timer = null;
-            eventListener.off('mousemove');
-            eventListener.destruct();
-            eventListener = null;
-            e._contextMenuData.manager.handler.$currentTrigger = $this;
-            e._contextMenuData.manager.triggerEvent(this, 'contextmenu', {
-                data: e._contextMenuData.manager.handler.hoveract.data,
-                pageX: e._contextMenuData.manager.handler.hoveract.pageX,
-                pageY: e._contextMenuData.manager.handler.hoveract.pageY
-            });
-        }, e._contextMenuData.delay);
+        //
+        // console.log('========== temp mouseenter');
+        // let eventListener = new ContextMenuEventListener(document, e._contextMenuData);
+        // eventListener.on('mousemove', e._contextMenuData.manager.handler.mousemove);
+        // e._contextMenuData.manager.handler.hoveract.timer = setTimeout(() => {
+        //     e._contextMenuData.manager.handler.hoveract.timer = null;
+        //     eventListener.off('mousemove');
+        //     eventListener.destruct();
+        //     eventListener = null;
+        //     e._contextMenuData.manager.handler.$currentTrigger = $this;
+        //     e._contextMenuData.manager.triggerEvent(this, 'contextmenu', {
+        //         data: e._contextMenuData.manager.handler.hoveract.data,
+        //         pageX: e._contextMenuData.manager.handler.hoveract.pageX,
+        //         pageY: e._contextMenuData.manager.handler.hoveract.pageY
+        //     });
+        // }, e._contextMenuData.delay);
     }
 
     /**
@@ -686,6 +688,7 @@ export default class ContextMenuEventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     menuMouseenter(e) {
+        console.log('menuMouseenter');
         let root = e._contextMenuData;
         root.hovering = true;
     }
@@ -712,6 +715,7 @@ export default class ContextMenuEventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     itemMouseenter(e) {
+        console.log('itemMouseenter');
         let $this = $(this);
         let data = $this.data();
         let currentMenuData = data.contextMenu;
@@ -772,8 +776,8 @@ export default class ContextMenuEventHandler {
             return;
         }
 
-        console.log('blur itemmouseleave 2');
-        rootMenuData.manager.triggerEvent(this, 'contextmenu:blur', {data: currentMenuData}, false);
+        console.log('blur itemmouseleave 2', this);
+        rootMenuData.manager.triggerEvent(this, 'contextmenu:blur', {data: currentMenuData});
     }
 
     /**
@@ -851,6 +855,7 @@ export default class ContextMenuEventHandler {
      */
     focusItem(e) {
         e.stopPropagation();
+
         const $this = $(this);
         const data = $this.data();
         const currentMenuData = data.contextMenu;
@@ -870,6 +875,7 @@ export default class ContextMenuEventHandler {
             .filter('.' + rootMenuData.classNames.hover);
 
         if ($element.length > 0) {
+            console.log('blur focusitem list', $element, $this)
             $element.each(function (i, e) {
                 console.log('blur focusitem ');
                 rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', {data: currentMenuData}, false);
@@ -885,6 +891,7 @@ export default class ContextMenuEventHandler {
 
         // position sub-menu - do after show so dumb $.ui.position can keep up
         if (currentMenuData.$node) {
+            console.log('Focus and position', $this.get(0), currentMenuData.$node.get(0), currentMenuData.$menu.get(0));
             rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
         }
     }

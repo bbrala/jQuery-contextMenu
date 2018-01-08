@@ -195,8 +195,7 @@ export default class ContextMenu {
         }
         if (typeof options.listeners === 'undefined') {
             options.listeners = {
-                document: new ContextMenuEventListener(document, options),
-                contextMenuAutoHide: new ContextMenuEventListener(document, options)
+                document: new ContextMenuEventListener(document, options)
             };
         }
 
@@ -216,23 +215,27 @@ export default class ContextMenu {
                 .on('prevcommand', '.context-menu-list', this.handler.prevItem)
                 .on('nextcommand', '.context-menu-list', this.handler.nextItem)
                 .on('contextmenu', '.context-menu-list', this.handler.abortevent)
-                .on('mouseenter', '.context-menu-list', this.handler.menuMouseenter)
-                .on('mouseleave', '.context-menu-list', this.handler.menuMouseleave);
+                .on('mouseleave', '.context-menu-list', this.handler.menuMouseleave)
+                .on('mouseenter', '.context-menu-list', this.handler.menuMouseenter);
 
             options.listeners.document
                 .on(itemClick, '.context-menu-item', this.handler.itemClick)
                 .on('contextmenu:focus', '.context-menu-item', this.handler.focusItem)
                 .on('contextmenu:blur', '.context-menu-item', this.handler.blurItem)
                 .on('contextmenu', '.context-menu-item', this.handler.abortevent)
-                .on('mouseenter', '.context-menu-item', this.handler.itemMouseenter)
-                .on('mouseleave', '.context-menu-item', this.handler.itemMouseleave);
+                .on('mouseleave', '.context-menu-item', this.handler.itemMouseleave)
+                .on('mouseenter', '.context-menu-item', this.handler.itemMouseenter);
 
             options.listeners.document.on('mouseup', '.context-menu-input', this.handler.inputClick);
 
             this.initialized = true;
         }
 
-        options.listeners.context = new ContextMenuEventListener(options.context.get(0), options);
+        if (options._hasContext) {
+            options.listeners.context = new ContextMenuEventListener(options.context.get(0), options);
+        } else {
+            options.listeners.context = options.listeners.document;
+        }
 
         // engage native contextmenu event
         options.listeners.context.on('contextmenu', options.selector, this.handler.contextmenu);

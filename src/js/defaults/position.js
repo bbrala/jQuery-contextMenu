@@ -84,6 +84,7 @@ export function position(e, currentMenuData, x, y) {
  */
 // position the sub-menu
 export function positionSubmenu(e, $menu) {
+    console.log('Position', $menu);
     if (typeof $menu === 'undefined') {
         // When user hovers over item (which has sub items) handle.focusItem will call this.
         // but the submenu does not exist yet if ContextMenuData.items is a promise. just return, will

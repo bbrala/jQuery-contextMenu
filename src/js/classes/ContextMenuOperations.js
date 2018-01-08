@@ -81,6 +81,7 @@ export default class ContextMenuOperations {
         // register autoHide handler
         if (menuData.autoHide) {
             // mouse position handler
+            // @todo this overwrites mousemove?
             menuData.listeners.contextMenuAutoHide.on('mousemove', (e) => {
                 // need to capture the offset on mousemove,
                 // since the page might've been scrolled since activation
@@ -146,8 +147,8 @@ export default class ContextMenuOperations {
 
         // remove handle
         menuData.manager.handler.$currentTrigger = null;
+
         // remove selected @todo trigger multiple?
-        console.log('Blur hide');
         menuData.$menu.find('.' + menuData.classNames.hover).trigger('contextmenu:blur');
         menuData.$selected = null;
         // collapse all submenus
@@ -377,8 +378,10 @@ export default class ContextMenuOperations {
 
                     case ContextMenuItemTypes.submenu:
                         createNameNode(item).appendTo($t);
+                        $t.addClass('item-' + item.name);
                         item.appendTo = item.$node;
                         $t.data('contextMenu', item).addClass('context-menu-submenu');
+
                         item.callback = null;
 
                         // If item contains items, and this is a promise, we should create it later

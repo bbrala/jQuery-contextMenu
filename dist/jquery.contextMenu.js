@@ -13,7 +13,7 @@
  * Licensed under
  *   MIT License http://www.opensource.org/licenses/mit-license
  * 
- * Date: 2018-01-03T12:23:29.930Z
+ * Date: 2018-01-08T16:07:51.357Z
  * 
  * 
  */(function webpackUniversalModuleDefinition(root, factory) {
@@ -108,8 +108,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var CAPTURED_EVENTS = ['blur', 'focus', 'mouseenter', 'mouseleave', 'click', 'mouseup', 'mousedown', 'selectstart'];
-
+var NOT_CAPTURED_EVENTS = [];
 var ContextMenuEventListener = function () {
     function ContextMenuEventListener(el, contextMenuData) {
         _classCallCheck(this, ContextMenuEventListener);
@@ -132,7 +131,7 @@ var ContextMenuEventListener = function () {
         value: function destruct() {
             if (this.events !== null) {
                 Object.keys(this.events).forEach(function (eventName) {
-                    var useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
+                    var useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
                     this.el.removeEventListener(eventName, this._onEvent, useCapture);
                 }, this);
             }
@@ -198,7 +197,7 @@ var ContextMenuEventListener = function () {
             }
 
             if (!this.events.hasOwnProperty(eventName)) {
-                var useCapture = CAPTURED_EVENTS.indexOf(eventName) > -1;
+                var useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
                 this.el.addEventListener(eventName, this._onEvent, useCapture);
 
                 this.events[eventName] = {};
@@ -226,6 +225,8 @@ var ContextMenuEventListener = function () {
     }, {
         key: '_onEvent',
         value: function _onEvent(event) {
+            console.log('Handling event', event.type, event);
+
             var isPropagationStopped = false;
             var stopPropagation = event.stopPropagation;
             event.stopPropagation = function () {
@@ -240,10 +241,19 @@ var ContextMenuEventListener = function () {
             }
 
             var target = event.target;
+
+            console.log(event.target);
+
             var events = this.events[event.type.toLowerCase()];
             var eventData = this.eventData[event.type.toLowerCase()];
 
+            if (event.type === 'contextmenu:focus') {
+                console.group('focusstack');
+            }
+
             while (target && target !== this.el && isPropagationStopped === false) {
+                console.log('find target for ' + event.type, target);
+
                 for (var selector in events) {
                     if (selector && eventData && eventData.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
                         event._extraContextMenuData = eventData[selector];
@@ -251,6 +261,7 @@ var ContextMenuEventListener = function () {
 
                     if (selector && events.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
                         this.context = target;
+                        console.log('find target for ' + event.type + '- FOUND ' + selector, target);
                         this.callAll(events[selector], event, this.context);
                     }
                 }
@@ -258,6 +269,9 @@ var ContextMenuEventListener = function () {
                 if (isPropagationStopped === true) {
                     break;
                 }
+            }
+            if (event.type === 'contextmenu:focus') {
+                console.groupEnd();
             }
             if (isPropagationStopped === false && events.hasOwnProperty('')) {
                 console.log('calling all');
@@ -694,8 +708,7 @@ var ContextMenu = function () {
             }
             if (typeof options.listeners === 'undefined') {
                 options.listeners = {
-                    document: new _ContextMenuEventListener2.default(document, options),
-                    contextMenuAutoHide: new _ContextMenuEventListener2.default(document, options)
+                    document: new _ContextMenuEventListener2.default(document, options)
                 };
             }
 
@@ -708,16 +721,20 @@ var ContextMenu = function () {
             if (!this.initialized) {
                 var itemClick = options.itemClickEvent === 'click' ? 'click' : 'mouseup';
 
-                options.listeners.document.on('contextmenu:hide', '.context-menu-list', this.handler.hideMenu).on('prevcommand', '.context-menu-list', this.handler.prevItem).on('nextcommand', '.context-menu-list', this.handler.nextItem).on('contextmenu', '.context-menu-list', this.handler.abortevent).on('mouseenter', '.context-menu-list', this.handler.menuMouseenter).on('mouseleave', '.context-menu-list', this.handler.menuMouseleave);
+                options.listeners.document.on('contextmenu:hide', '.context-menu-list', this.handler.hideMenu).on('prevcommand', '.context-menu-list', this.handler.prevItem).on('nextcommand', '.context-menu-list', this.handler.nextItem).on('contextmenu', '.context-menu-list', this.handler.abortevent).on('mouseleave', '.context-menu-list', this.handler.menuMouseleave).on('mouseenter', '.context-menu-list', this.handler.menuMouseenter);
 
-                options.listeners.document.on(itemClick, '.context-menu-item', this.handler.itemClick).on('contextmenu:focus', '.context-menu-item', this.handler.focusItem).on('contextmenu:blur', '.context-menu-item', this.handler.blurItem).on('contextmenu', '.context-menu-item', this.handler.abortevent).on('mouseenter', '.context-menu-item', this.handler.itemMouseenter).on('mouseleave', '.context-menu-item', this.handler.itemMouseleave);
+                options.listeners.document.on(itemClick, '.context-menu-item', this.handler.itemClick).on('contextmenu:focus', '.context-menu-item', this.handler.focusItem).on('contextmenu:blur', '.context-menu-item', this.handler.blurItem).on('contextmenu', '.context-menu-item', this.handler.abortevent).on('mouseleave', '.context-menu-item', this.handler.itemMouseleave).on('mouseenter', '.context-menu-item', this.handler.itemMouseenter);
 
                 options.listeners.document.on('mouseup', '.context-menu-input', this.handler.inputClick);
 
                 this.initialized = true;
             }
 
-            options.listeners.context = new _ContextMenuEventListener2.default(options.context.get(0), options);
+            if (options._hasContext) {
+                options.listeners.context = new _ContextMenuEventListener2.default(options.context.get(0), options);
+            } else {
+                options.listeners.context = options.listeners.document;
+            }
 
             options.listeners.context.on('contextmenu', options.selector, this.handler.contextmenu);
 
@@ -994,7 +1011,6 @@ var ContextMenuOperations = function () {
 
             menuData.manager.handler.$currentTrigger = null;
 
-            console.log('Blur hide');
             menuData.$menu.find('.' + menuData.classNames.hover).trigger('contextmenu:blur');
             menuData.$selected = null;
 
@@ -1183,8 +1199,10 @@ var ContextMenuOperations = function () {
 
                         case _ContextMenuItemTypes2.default.submenu:
                             createNameNode(item).appendTo($t);
+                            $t.addClass('item-' + item.name);
                             item.appendTo = item.$node;
                             $t.data('contextMenu', item).addClass('context-menu-submenu');
+
                             item.callback = null;
 
                             if (typeof item.items.then === 'function') {
@@ -1506,6 +1524,7 @@ function position(e, currentMenuData, x, y) {
 }
 
 function positionSubmenu(e, $menu) {
+    console.log('Position', $menu);
     if (typeof $menu === 'undefined') {
         return;
     }
@@ -1878,8 +1897,6 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'mouseenter',
         value: function mouseenter(e) {
-            var _this = this;
-
             var $this = $(this);
             var $related = $(e.relatedTarget);
 
@@ -1894,20 +1911,6 @@ var ContextMenuEventHandler = function () {
             e._contextMenuData.manager.handler.hoveract.pageX = e.pageX;
             e._contextMenuData.manager.handler.hoveract.pageY = e.pageY;
             e._contextMenuData.manager.handler.hoveract.data = e._contextMenuData;
-            var eventListener = new _ContextMenuEventListener2.default(document, e._contextMenuData);
-            eventListener.on('mousemove', e._contextMenuData.manager.handler.mousemove);
-            e._contextMenuData.manager.handler.hoveract.timer = setTimeout(function () {
-                e._contextMenuData.manager.handler.hoveract.timer = null;
-                eventListener.off('mousemove');
-                eventListener.destruct();
-                eventListener = null;
-                e._contextMenuData.manager.handler.$currentTrigger = $this;
-                e._contextMenuData.manager.triggerEvent(_this, 'contextmenu', {
-                    data: e._contextMenuData.manager.handler.hoveract.data,
-                    pageX: e._contextMenuData.manager.handler.hoveract.pageX,
-                    pageY: e._contextMenuData.manager.handler.hoveract.pageY
-                });
-            }, e._contextMenuData.delay);
         }
     }, {
         key: 'mousemove',
@@ -2281,6 +2284,7 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'menuMouseenter',
         value: function menuMouseenter(e) {
+            console.log('menuMouseenter');
             var root = e._contextMenuData;
             root.hovering = true;
         }
@@ -2295,6 +2299,7 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'itemMouseenter',
         value: function itemMouseenter(e) {
+            console.log('itemMouseenter');
             var $this = $(this);
             var data = $this.data();
             var currentMenuData = data.contextMenu;
@@ -2346,8 +2351,8 @@ var ContextMenuEventHandler = function () {
                 return;
             }
 
-            console.log('blur itemmouseleave 2');
-            rootMenuData.manager.triggerEvent(this, 'contextmenu:blur', { data: currentMenuData }, false);
+            console.log('blur itemmouseleave 2', this);
+            rootMenuData.manager.triggerEvent(this, 'contextmenu:blur', { data: currentMenuData });
         }
     }, {
         key: 'itemClick',
@@ -2395,6 +2400,7 @@ var ContextMenuEventHandler = function () {
         key: 'focusItem',
         value: function focusItem(e) {
             e.stopPropagation();
+
             var $this = $(this);
             var data = $this.data();
             var currentMenuData = data.contextMenu;
@@ -2407,6 +2413,7 @@ var ContextMenuEventHandler = function () {
             var $element = $this.addClass([rootMenuData.classNames.hover, rootMenuData.classNames.visible].join(' ')).parent().find('.context-menu-item').not($this).removeClass(rootMenuData.classNames.visible).filter('.' + rootMenuData.classNames.hover);
 
             if ($element.length > 0) {
+                console.log('blur focusitem list', $element, $this);
                 $element.each(function (i, e) {
                     console.log('blur focusitem ');
                     rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', { data: currentMenuData }, false);
@@ -2420,6 +2427,7 @@ var ContextMenuEventHandler = function () {
             }
 
             if (currentMenuData.$node) {
+                console.log('Focus and position', $this.get(0), currentMenuData.$node.get(0), currentMenuData.$menu.get(0));
                 rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
             }
         }
