@@ -1,35 +1,7 @@
-/*!
- * 
- * jQuery contextMenu v3.0.0-beta.1 - Plugin for simple contextMenu handling
- * 
- * Version: v3.0.0-beta.1
- * 
- * Authors: Björn Brala (SWIS.nl), Rodney Rehm, Addy Osmani (patches for FF)
- * 
- * Web: http://swisnl.github.io/jQuery-contextMenu/
- * 
- * Copyright (c) 2011-2018 SWIS BV and contributors
- * 
- * Licensed under
- *   MIT License http://www.opensource.org/licenses/mit-license
- * 
- * Date: 2018-01-08T16:07:51.357Z
- * 
- * 
- */@-webkit-keyframes cm-spin {
+() => banner@keyframes cm-spin {
   0% {
-    -webkit-transform: translateY(-50%) rotate(0deg);
     transform: translateY(-50%) rotate(0deg); }
   100% {
-    -webkit-transform: translateY(-50%) rotate(359deg);
-    transform: translateY(-50%) rotate(359deg); } }
-
-@keyframes cm-spin {
-  0% {
-    -webkit-transform: translateY(-50%) rotate(0deg);
-    transform: translateY(-50%) rotate(0deg); }
-  100% {
-    -webkit-transform: translateY(-50%) rotate(359deg);
     transform: translateY(-50%) rotate(359deg); } }
 
 @font-face {
@@ -74,9 +46,8 @@
   position: absolute;
   text-align: center;
   top: 50%;
-  -webkit-transform: translateY(-50%);
-      -ms-transform: translateY(-50%);
-          transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+      transform: translateY(-50%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 2em; }
@@ -88,12 +59,12 @@
   color: #bbbbbb; }
 
 .context-menu-icon.context-menu-icon-loading:before {
-  -webkit-animation: cm-spin 2s infinite;
-          animation: cm-spin 2s infinite; }
+  animation: cm-spin 2s infinite; }
 
 .context-menu-icon.context-menu-icon--fa {
   display: list-item;
-  font-family: inherit; }
+  font-family: inherit;
+  line-height: inherit; }
   .context-menu-icon.context-menu-icon--fa::before {
     color: #2980B9;
     font-family: FontAwesome;
@@ -105,9 +76,8 @@
     position: absolute;
     text-align: center;
     top: 50%;
-    -webkit-transform: translateY(-50%);
-        -ms-transform: translateY(-50%);
-            transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     width: 2em; }
@@ -133,6 +103,7 @@
 
 .context-menu-item {
   background-color: #FFF;
+  box-sizing: content-box;
   color: #2F2F2F;
   padding: 0.2em 2em;
   position: relative;
@@ -176,9 +147,8 @@
   position: absolute;
   right: .5em;
   top: 50%;
-  -webkit-transform: translateY(-50%);
-      -ms-transform: translateY(-50%);
-          transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+      transform: translateY(-50%);
   width: 0;
   z-index: 1; }
 

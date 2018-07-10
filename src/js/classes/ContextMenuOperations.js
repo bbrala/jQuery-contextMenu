@@ -43,8 +43,12 @@ export default class ContextMenuOperations {
         }
 
         // create or update context menu
-        menuData.manager.operations.update.call($trigger, e, menuData);
+        let hasVisibleItems = menuData.manager.operations.update.call($trigger, e, menuData);
 
+        if (hasVisibleItems === false) {
+            menuData.manager.handler.$currentTrigger = null;
+            return;
+        }
         // position menu
         menuData.position.call($trigger, e, menuData, x, y);
 
@@ -522,6 +526,8 @@ export default class ContextMenuOperations {
      * @param {JQuery.Event} e
      * @param {ContextMenuData?} currentMenuData
      * @param {ContextMenuData?} rootMenuData
+     *
+     * @return {boolean} hasVisibleItems
      */
     update(e, currentMenuData, rootMenuData) {
         const $trigger = this;
@@ -529,6 +535,9 @@ export default class ContextMenuOperations {
             rootMenuData = currentMenuData;
             rootMenuData.manager.operations.resize(e, currentMenuData.$menu);
         }
+
+        let hasVisibleItems = false;
+
         // re-check disabled for each item
         currentMenuData.$menu.children().each(function (index, element) {
             let $item = $(element);
@@ -545,6 +554,11 @@ export default class ContextMenuOperations {
             } else {
                 visible = true;
             }
+
+            if (visible) {
+                hasVisibleItems = true;
+            }
+
             $item[visible ? 'show' : 'hide']();
 
             // dis- / enable item
@@ -580,9 +594,14 @@ export default class ContextMenuOperations {
 
             if (item.$menu) {
                 // update sub-menu
-                rootMenuData.manager.operations.update.call($trigger, e, item, rootMenuData);
+                let subMenuHasVisibleItems = rootMenuData.manager.operations.update.call($trigger, e, item, rootMenuData);
+                if (subMenuHasVisibleItems) {
+                    hasVisibleItems = true;
+                }
             }
         });
+
+        return hasVisibleItems;
     }
 
     /**

@@ -1,22 +1,4 @@
-/*!
- * 
- * jQuery contextMenu v3.0.0-beta.1 - Plugin for simple contextMenu handling
- * 
- * Version: v3.0.0-beta.1
- * 
- * Authors: Björn Brala (SWIS.nl), Rodney Rehm, Addy Osmani (patches for FF)
- * 
- * Web: http://swisnl.github.io/jQuery-contextMenu/
- * 
- * Copyright (c) 2011-2018 SWIS BV and contributors
- * 
- * Licensed under
- *   MIT License http://www.opensource.org/licenses/mit-license
- * 
- * Date: 2018-01-08T16:07:51.357Z
- * 
- * 
- */(function webpackUniversalModuleDefinition(root, factory) {
+() => banner(function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
@@ -25,7 +7,7 @@
 		exports["ContextMenu"] = factory();
 	else
 		root["ContextMenu"] = factory();
-})(typeof self !== 'undefined' ? self : this, function() {
+})(window, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -64,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -87,274 +89,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _ContextMenuHelper = __webpack_require__(1);
-
-var _ContextMenuHelper2 = _interopRequireDefault(_ContextMenuHelper);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var NOT_CAPTURED_EVENTS = [];
-var ContextMenuEventListener = function () {
-    function ContextMenuEventListener(el, contextMenuData) {
-        _classCallCheck(this, ContextMenuEventListener);
-
-        if (!window.instanceId) {
-            window.instanceId = 0;
-        }
-        this.instanceId = window.instanceId++;
-        console.log('New listener', el, this.instanceId);
-
-        this.contextMenuData = contextMenuData || null;
-        this.el = el;
-        this.events = {};
-        this.eventData = {};
-        this._onEvent = this._onEvent.bind(this);
-    }
-
-    _createClass(ContextMenuEventListener, [{
-        key: 'destruct',
-        value: function destruct() {
-            if (this.events !== null) {
-                Object.keys(this.events).forEach(function (eventName) {
-                    var useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
-                    this.el.removeEventListener(eventName, this._onEvent, useCapture);
-                }, this);
-            }
-
-            this.context = null;
-            this.contextMenuData = null;
-            this.el = null;
-            this.events = null;
-            this.eventData = null;
-        }
-    }, {
-        key: 'off',
-        value: function off(eventName, selector, callback) {
-            if (typeof selector !== 'string') {
-                callback = selector;
-                selector = '';
-            }
-
-            if (callback) {
-                var events = this.events[eventName];
-                if (events) {
-                    events = events[selector];
-                    if (events) {
-                        for (var i = 0; i < events.length; i++) {
-                            if (events[i] === callback) {
-                                events.splice(i, 1);
-                                i--;
-                            }
-                        }
-                    }
-                }
-            } else {
-                if (this.events.hasOwnProperty(eventName) && this.events[eventName].hasOwnProperty(selector)) {
-                    this.events[eventName][selector] = [];
-                }
-            }
-            return this;
-        }
-    }, {
-        key: 'on',
-        value: function on(eventName, selector, callback) {
-            var data = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-
-            console.log('On', eventName, selector, this.instanceId);
-            if (typeof eventName !== 'string') {
-                var eventsMap = eventName;
-                for (var key in eventsMap) {
-                    if (eventsMap.hasOwnProperty(key)) {
-                        var split = key.split(' ');
-                        if (split.length > 1) {
-                            this.on(split[0], split[1], eventsMap[key], data);
-                        } else {
-                            this.on(split[0], '', eventsMap[key], data);
-                        }
-                    }
-                }
-                return this;
-            }
-
-            if (typeof selector !== 'string') {
-                callback = selector;
-                selector = '';
-            }
-
-            if (!this.events.hasOwnProperty(eventName)) {
-                var useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
-                this.el.addEventListener(eventName, this._onEvent, useCapture);
-
-                this.events[eventName] = {};
-            }
-
-            if (!this.events[eventName].hasOwnProperty(selector)) {
-                this.events[eventName][selector] = [];
-            }
-
-            if (this.events[eventName][selector].indexOf(callback) < 0) {
-                this.events[eventName][selector].push(callback);
-            }
-
-            if (data) {
-                if (!this.eventData.hasOwnProperty(eventName)) {
-                    this.eventData[eventName] = {};
-                }
-                if (!this.eventData[eventName].hasOwnProperty(selector)) {
-                    this.eventData[eventName][selector] = data;
-                }
-            }
-
-            return this;
-        }
-    }, {
-        key: '_onEvent',
-        value: function _onEvent(event) {
-            console.log('Handling event', event.type, event);
-
-            var isPropagationStopped = false;
-            var stopPropagation = event.stopPropagation;
-            event.stopPropagation = function () {
-                stopPropagation.call(event);
-                isPropagationStopped = true;
-            };
-
-            if (event.detail.data) {
-                event._contextMenuData = event.detail.data;
-            } else {
-                event._contextMenuData = this.contextMenuData;
-            }
-
-            var target = event.target;
-
-            console.log(event.target);
-
-            var events = this.events[event.type.toLowerCase()];
-            var eventData = this.eventData[event.type.toLowerCase()];
-
-            if (event.type === 'contextmenu:focus') {
-                console.group('focusstack');
-            }
-
-            while (target && target !== this.el && isPropagationStopped === false) {
-                console.log('find target for ' + event.type, target);
-
-                for (var selector in events) {
-                    if (selector && eventData && eventData.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
-                        event._extraContextMenuData = eventData[selector];
-                    }
-
-                    if (selector && events.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
-                        this.context = target;
-                        console.log('find target for ' + event.type + '- FOUND ' + selector, target);
-                        this.callAll(events[selector], event, this.context);
-                    }
-                }
-                target = target.parentElement;
-                if (isPropagationStopped === true) {
-                    break;
-                }
-            }
-            if (event.type === 'contextmenu:focus') {
-                console.groupEnd();
-            }
-            if (isPropagationStopped === false && events.hasOwnProperty('')) {
-                console.log('calling all');
-                this.callAll(events[''], event, this.context);
-            }
-        }
-    }, {
-        key: 'callAll',
-        value: function callAll(callbacks, event, context) {
-            for (var i = 0; i < callbacks.length; i++) {
-                callbacks[i].call(context, event);
-            }
-        }
-    }]);
-
-    return ContextMenuEventListener;
-}();
-
-module.exports = ContextMenuEventListener;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var ContextMenuHelper = function () {
-    function ContextMenuHelper() {
-        _classCallCheck(this, ContextMenuHelper);
-    }
-
-    _createClass(ContextMenuHelper, null, [{
-        key: 'matchesSelector',
-        value: function matchesSelector(el, selector) {
-            var method = el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;
-            return method.call(el, selector);
-        }
-    }, {
-        key: 'zindex',
-        value: function zindex($t) {
-            var zin = 0;
-            var $tt = $t;
-
-            while (true) {
-                zin = Math.max(zin, parseInt($tt.css('z-index'), 10) || 0);
-                $tt = $tt.parent();
-                if (!$tt || !$tt.length || 'html body'.indexOf($tt.prop('nodeName').toLowerCase()) > -1) {
-                    break;
-                }
-            }
-            return zin;
-        }
-    }, {
-        key: 'splitAccesskey',
-        value: function splitAccesskey(val) {
-            var t = val.split(/\s+/);
-            var keys = [];
-
-            for (var i = 0, k; k = t[i]; i++) {
-                k = k.charAt(0).toUpperCase();
-                keys.push(k);
-            }
-
-            return keys;
-        }
-    }]);
-
-    return ContextMenuHelper;
-}();
-
-exports.default = ContextMenuHelper;
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -387,7 +128,7 @@ var ContextMenuItemTypes = {
 exports.default = ContextMenuItemTypes;
 
 /***/ }),
-/* 3 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -397,7 +138,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _position = __webpack_require__(8);
+var _position = __webpack_require__(6);
 
 exports.default = {
     selector: null,
@@ -465,23 +206,23 @@ exports.default = {
 };
 
 /***/ }),
-/* 4 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(5);
+__webpack_require__(10);
 
-var _ContextMenu = __webpack_require__(6);
+var _ContextMenu = __webpack_require__(3);
 
 var _ContextMenu2 = _interopRequireDefault(_ContextMenu);
 
-var _ContextMenuItemTypes = __webpack_require__(2);
+var _ContextMenuItemTypes = __webpack_require__(0);
 
 var _ContextMenuItemTypes2 = _interopRequireDefault(_ContextMenuItemTypes);
 
-var _contextMenuFunction = __webpack_require__(11);
+var _contextMenuFunction = __webpack_require__(9);
 
 var _contextMenuFunction2 = _interopRequireDefault(_contextMenuFunction);
 
@@ -518,13 +259,7 @@ $.contextMenu = contextMenu;
 module.exports = { ContextMenu: _ContextMenu2.default, ContextMenuItemTypes: _ContextMenuItemTypes2.default };
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 6 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -536,25 +271,21 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ContextMenuOperations = __webpack_require__(7);
+var _ContextMenuOperations = __webpack_require__(4);
 
 var _ContextMenuOperations2 = _interopRequireDefault(_ContextMenuOperations);
 
-var _defaults = __webpack_require__(3);
+var _defaults = __webpack_require__(1);
 
 var _defaults2 = _interopRequireDefault(_defaults);
 
-var _ContextMenuHtml5Builder = __webpack_require__(9);
+var _ContextMenuHtml5Builder = __webpack_require__(7);
 
 var _ContextMenuHtml5Builder2 = _interopRequireDefault(_ContextMenuHtml5Builder);
 
-var _ContextMenuEventHandler = __webpack_require__(10);
+var _ContextMenuEventHandler = __webpack_require__(8);
 
 var _ContextMenuEventHandler2 = _interopRequireDefault(_ContextMenuEventHandler);
-
-var _ContextMenuEventListener = __webpack_require__(0);
-
-var _ContextMenuEventListener2 = _interopRequireDefault(_ContextMenuEventListener);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -646,7 +377,7 @@ var ContextMenu = function () {
 
                     $visibleMenu = $('.context-menu-list').filter(':visible');
                     if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is($(o.context).find(o.selector))) {
-                        _this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', { force: true });
+                        $visibleMenu.trigger('contextmenu:hide', { force: true });
                     }
 
                     if (_this.menus[o.ns].$menu) {
@@ -674,7 +405,7 @@ var ContextMenu = function () {
             } else if (this.namespaces[options.selector]) {
                 $visibleMenu = $('.context-menu-list').filter(':visible');
                 if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is(options.selector)) {
-                    this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', { force: true });
+                    $visibleMenu.trigger('contextmenu:hide', { force: true });
                 }
 
                 if (this.menus[this.namespaces[options.selector]].$menu) {
@@ -706,12 +437,6 @@ var ContextMenu = function () {
             if (!options._hasContext) {
                 this.namespaces[options.selector] = options.ns;
             }
-            if (typeof options.listeners === 'undefined') {
-                options.listeners = {
-                    document: new _ContextMenuEventListener2.default(document, options)
-                };
-            }
-
             this.menus[options.ns] = options;
 
             if (!options.trigger) {
@@ -719,35 +444,40 @@ var ContextMenu = function () {
             }
 
             if (!this.initialized) {
-                var itemClick = options.itemClickEvent === 'click' ? 'click' : 'mouseup';
+                var itemClick = options.itemClickEvent === 'click' ? 'click.contextMenu' : 'mouseup.contextMenu';
+                var contextMenuItemObj = {
+                    'contextmenu:focus.contextMenu': this.handler.focusItem,
+                    'contextmenu:blur.contextMenu': this.handler.blurItem,
+                    'contextmenu.contextMenu': this.handler.abortevent,
+                    'mouseenter.contextMenu': this.handler.itemMouseenter,
+                    'mouseleave.contextMenu': this.handler.itemMouseleave
+                };
+                contextMenuItemObj[itemClick] = this.handler.itemClick;
 
-                options.listeners.document.on('contextmenu:hide', '.context-menu-list', this.handler.hideMenu).on('prevcommand', '.context-menu-list', this.handler.prevItem).on('nextcommand', '.context-menu-list', this.handler.nextItem).on('contextmenu', '.context-menu-list', this.handler.abortevent).on('mouseleave', '.context-menu-list', this.handler.menuMouseleave).on('mouseenter', '.context-menu-list', this.handler.menuMouseenter);
-
-                options.listeners.document.on(itemClick, '.context-menu-item', this.handler.itemClick).on('contextmenu:focus', '.context-menu-item', this.handler.focusItem).on('contextmenu:blur', '.context-menu-item', this.handler.blurItem).on('contextmenu', '.context-menu-item', this.handler.abortevent).on('mouseleave', '.context-menu-item', this.handler.itemMouseleave).on('mouseenter', '.context-menu-item', this.handler.itemMouseenter);
-
-                options.listeners.document.on('mouseup', '.context-menu-input', this.handler.inputClick);
+                $(document).on({
+                    'contextmenu:hide.contextMenu': this.handler.hideMenu,
+                    'prevcommand.contextMenu': this.handler.prevItem,
+                    'nextcommand.contextMenu': this.handler.nextItem,
+                    'contextmenu.contextMenu': this.handler.abortevent,
+                    'mouseenter.contextMenu': this.handler.menuMouseenter,
+                    'mouseleave.contextMenu': this.handler.menuMouseleave
+                }, '.context-menu-list').on('mouseup.contextMenu', '.context-menu-input', this.handler.inputClick).on(contextMenuItemObj, '.context-menu-item');
 
                 this.initialized = true;
             }
 
-            if (options._hasContext) {
-                options.listeners.context = new _ContextMenuEventListener2.default(options.context.get(0), options);
-            } else {
-                options.listeners.context = options.listeners.document;
-            }
-
-            options.listeners.context.on('contextmenu', options.selector, this.handler.contextmenu);
+            options.context.on('contextmenu' + options.ns, options.selector, options, this.handler.contextmenu);
 
             switch (options.trigger) {
                 case 'hover':
-                    options.listeners.context.on('mouseenter', options.selector, this.handler.mouseenter).on('mouseleave', options.selector, this.handler.mouseleave);
+                    options.context.on('mouseenter' + options.ns, options.selector, options, this.handler.mouseenter).on('mouseleave' + options.ns, options.selector, options, this.handler.mouseleave);
                     break;
 
                 case 'left':
-                    options.listeners.context.on('click', options.selector, this.handler.click);
+                    options.context.on('click' + options.ns, options.selector, options, this.handler.click);
                     break;
                 case 'touchstart':
-                    options.listeners.context.on('touchstart', options.selector, this.handler.click);
+                    options.context.on('touchstart' + options.ns, options.selector, options, this.handler.click);
                     break;
             }
 
@@ -860,18 +590,6 @@ var ContextMenu = function () {
 
             return data;
         }
-    }, {
-        key: 'triggerEvent',
-        value: function triggerEvent(el, eventName) {
-            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-            var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
-            var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
-
-            console.log('Trigger', eventName, 'on', el);
-            var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
-            el.dispatchEvent(event);
-            return !event.defaultPrevented;
-        }
     }]);
 
     return ContextMenu;
@@ -880,7 +598,7 @@ var ContextMenu = function () {
 exports.default = ContextMenu;
 
 /***/ }),
-/* 7 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -894,17 +612,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ContextMenuHelper = __webpack_require__(1);
+var _ContextMenuHelper = __webpack_require__(5);
 
 var _ContextMenuHelper2 = _interopRequireDefault(_ContextMenuHelper);
 
-var _ContextMenuItemTypes = __webpack_require__(2);
+var _ContextMenuItemTypes = __webpack_require__(0);
 
 var _ContextMenuItemTypes2 = _interopRequireDefault(_ContextMenuItemTypes);
-
-var _ContextMenuEventListener = __webpack_require__(0);
-
-var _ContextMenuEventListener2 = _interopRequireDefault(_ContextMenuEventListener);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -920,13 +634,10 @@ var ContextMenuOperations = function () {
     _createClass(ContextMenuOperations, [{
         key: 'show',
         value: function show(e, menuData, x, y) {
-            var $trigger = $(e.target);
+            var $trigger = $(this);
             var css = {};
 
-            var layer = document.getElementById('#context-menu-layer');
-            if (layer) {
-                menuData.manager.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
-            }
+            $('#context-menu-layer').trigger('mousedown');
 
             menuData.$trigger = $trigger;
 
@@ -935,7 +646,12 @@ var ContextMenuOperations = function () {
                 return;
             }
 
-            menuData.manager.operations.update.call($trigger, e, menuData);
+            var hasVisibleItems = menuData.manager.operations.update.call($trigger, e, menuData);
+
+            if (hasVisibleItems === false) {
+                menuData.manager.handler.$currentTrigger = null;
+                return;
+            }
 
             menuData.position.call($trigger, e, menuData, x, y);
 
@@ -953,7 +669,7 @@ var ContextMenuOperations = function () {
             menuData.$menu.find('ul').css('zIndex', css.zIndex + 1);
 
             menuData.$menu.css(css)[menuData.animation.show](menuData.animation.duration, function () {
-                menuData.manager.triggerEvent($trigger.get(0), 'contextmenu:visible');
+                $trigger.trigger('contextmenu:visible');
 
                 menuData.manager.operations.activated(e, menuData);
                 menuData.events.activated($trigger, e, menuData);
@@ -961,10 +677,10 @@ var ContextMenuOperations = function () {
 
             $trigger.data('contextMenu', menuData).addClass('context-menu-active');
 
-            menuData.listeners.document.off('keydown').on('keydown', menuData.manager.handler.key);
+            $(document).off('keydown.contextMenu').on('keydown.contextMenu', menuData, menuData.manager.handler.key);
 
             if (menuData.autoHide) {
-                menuData.listeners.contextMenuAutoHide.on('mousemove', function (e) {
+                $(document).on('mousemove.contextMenuAutoHide', function (e) {
                     var pos = $trigger.offset();
                     pos.right = pos.left + $trigger.outerWidth();
                     pos.bottom = pos.top + $trigger.outerHeight();
@@ -972,7 +688,7 @@ var ContextMenuOperations = function () {
                     if (menuData.$layer && !menuData.hovering && (!(e.pageX >= pos.left && e.pageX <= pos.right) || !(e.pageY >= pos.top && e.pageY <= pos.bottom))) {
                         setTimeout(function () {
                             if (!menuData.hovering && menuData.$menu !== null && typeof menuData.$menu !== 'undefined') {
-                                menuData.manager.triggerEvent(menuData.$menu.get(0), 'contextmenu:hide');
+                                menuData.$menu.trigger('contextmenu:hide');
                             }
                         }, 50);
                     }
@@ -1016,13 +732,10 @@ var ContextMenuOperations = function () {
 
             menuData.$menu.find('.' + menuData.classNames.visible).removeClass(menuData.classNames.visible);
 
-            menuData.listeners.contextMenuAutoHide.destruct();
-            menuData.listeners.document.off('keydown');
+            $(document).off('.contextMenuAutoHide').off('keydown.contextMenu');
 
             if (menuData.$menu) {
                 menuData.$menu[menuData.animation.hide](menuData.animation.duration, function () {
-                    var manager = menuData.manager;
-
                     if (menuData.build) {
                         menuData.$menu.remove();
                         Object.keys(menuData).forEach(function (key) {
@@ -1032,6 +745,7 @@ var ContextMenuOperations = function () {
                                 case 'build':
                                 case 'trigger':
                                     return true;
+
                                 default:
                                     menuData[key] = undefined;
                                     try {
@@ -1043,7 +757,7 @@ var ContextMenuOperations = function () {
                     }
 
                     setTimeout(function () {
-                        manager.triggerEvent($trigger.get(0), 'contextmenu:hidden');
+                        $trigger.trigger('contextmenu:hidden');
                     }, 10);
                 });
             }
@@ -1113,10 +827,6 @@ var ContextMenuOperations = function () {
                     'contextMenuRoot': rootMenuData,
                     'contextMenuKey': key
                 });
-
-                if (typeof item.listeners === 'undefined') {
-                    item.listeners = {};
-                }
 
                 if (typeof item.accesskey !== 'undefined') {
                     var aks = _ContextMenuHelper2.default.splitAccesskey(item.accesskey);
@@ -1199,10 +909,8 @@ var ContextMenuOperations = function () {
 
                         case _ContextMenuItemTypes2.default.submenu:
                             createNameNode(item).appendTo($t);
-                            $t.addClass('item-' + item.name);
                             item.appendTo = item.$node;
                             $t.data('contextMenu', item).addClass('context-menu-submenu');
-
                             item.callback = null;
 
                             if (typeof item.items.then === 'function') {
@@ -1229,11 +937,10 @@ var ContextMenuOperations = function () {
                     }
 
                     if (item.type && item.type !== _ContextMenuItemTypes2.default.submenu && item.type !== _ContextMenuItemTypes2.default.html && item.type !== _ContextMenuItemTypes2.default.separator) {
-                        item.listeners.input = new _ContextMenuEventListener2.default($input.get(0), rootMenuData);
-                        item.listeners.input.on('focus', rootMenuData.manager.handler.focusInput).on('blur', rootMenuData.manager.handler.blurInput);
+                        $input.on('focus', rootMenuData.manager.handler.focusInput).on('blur', rootMenuData.manager.handler.blurInput);
 
                         if (item.events) {
-                            item.listeners.input.on(item.events, currentMenuData);
+                            $input.on(item.events, currentMenuData);
                         }
                     }
 
@@ -1262,7 +969,7 @@ var ContextMenuOperations = function () {
             });
 
             if (!currentMenuData.$node) {
-                currentMenuData.$menu.css('display', 'none').addClass('context-menu-root');
+                currentMenuData.$menu.css('display', 'none').addClass('context-menu-rootMenuData');
             }
             currentMenuData.$menu.appendTo(currentMenuData.appendTo || document.body);
         }
@@ -1281,7 +988,7 @@ var ContextMenuOperations = function () {
             });
 
             $menu.find('> li > ul').each(function (index, element) {
-                e._contextMenuData.manager.operations.resize(e, $(element), true);
+                e.data.manager.operations.resize(e, $(element), true);
             });
 
             if (!nested) {
@@ -1304,6 +1011,8 @@ var ContextMenuOperations = function () {
                 rootMenuData.manager.operations.resize(e, currentMenuData.$menu);
             }
 
+            var hasVisibleItems = false;
+
             currentMenuData.$menu.children().each(function (index, element) {
                 var $item = $(element);
                 var key = $item.data('contextMenuKey');
@@ -1319,6 +1028,11 @@ var ContextMenuOperations = function () {
                 } else {
                     visible = true;
                 }
+
+                if (visible) {
+                    hasVisibleItems = true;
+                }
+
                 $item[visible ? 'show' : 'hide']();
 
                 $item[disabled ? 'addClass' : 'removeClass'](rootMenuData.classNames.disabled);
@@ -1350,9 +1064,14 @@ var ContextMenuOperations = function () {
                 }
 
                 if (item.$menu) {
-                    rootMenuData.manager.operations.update.call($trigger, e, item, rootMenuData);
+                    var subMenuHasVisibleItems = rootMenuData.manager.operations.update.call($trigger, e, item, rootMenuData);
+                    if (subMenuHasVisibleItems) {
+                        hasVisibleItems = true;
+                    }
                 }
             });
+
+            return hasVisibleItems;
         }
     }, {
         key: 'layer',
@@ -1370,10 +1089,7 @@ var ContextMenuOperations = function () {
                 opacity: 0,
                 filter: 'alpha(opacity=0)',
                 'background-color': '#000'
-            }).data('contextMenuRoot', menuData).insertBefore(this);
-
-            menuData.listeners.layer = new _ContextMenuEventListener2.default($layer.get(0), menuData);
-            menuData.listeners.layer.on('contextmenu', menuData.manager.handler.abortevent).on('mousedown', menuData.manager.handler.layerClick);
+            }).data('contextMenuRoot', menuData).insertBefore(this).on('contextmenu', menuData.manager.handler.abortevent).on('mousedown', menuData.manager.handler.layerClick);
 
             if (typeof document.body.style.maxWidth === 'undefined') {
                 $layer.css({
@@ -1456,7 +1172,62 @@ exports.default = ContextMenuOperations;
 ;
 
 /***/ }),
-/* 8 */
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ContextMenuHelper = function () {
+    function ContextMenuHelper() {
+        _classCallCheck(this, ContextMenuHelper);
+    }
+
+    _createClass(ContextMenuHelper, null, [{
+        key: 'zindex',
+        value: function zindex($t) {
+            var zin = 0;
+            var $tt = $t;
+
+            while (true) {
+                zin = Math.max(zin, parseInt($tt.css('z-index'), 10) || 0);
+                $tt = $tt.parent();
+                if (!$tt || !$tt.length || 'html body'.indexOf($tt.prop('nodeName').toLowerCase()) > -1) {
+                    break;
+                }
+            }
+            return zin;
+        }
+    }, {
+        key: 'splitAccesskey',
+        value: function splitAccesskey(val) {
+            var t = val.split(/\s+/);
+            var keys = [];
+
+            for (var i = 0, k; k = t[i]; i++) {
+                k = k.charAt(0).toUpperCase();
+                keys.push(k);
+            }
+
+            return keys;
+        }
+    }]);
+
+    return ContextMenuHelper;
+}();
+
+exports.default = ContextMenuHelper;
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1524,7 +1295,6 @@ function position(e, currentMenuData, x, y) {
 }
 
 function positionSubmenu(e, $menu) {
-    console.log('Position', $menu);
     if (typeof $menu === 'undefined') {
         return;
     }
@@ -1545,7 +1315,7 @@ function positionSubmenu(e, $menu) {
 }
 
 /***/ }),
-/* 9 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1750,7 +1520,7 @@ var ContextMenuHtml5Builder = function () {
 exports.default = ContextMenuHtml5Builder;
 
 /***/ }),
-/* 10 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1762,13 +1532,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _defaults = __webpack_require__(3);
+var _defaults = __webpack_require__(1);
 
 var _defaults2 = _interopRequireDefault(_defaults);
-
-var _ContextMenuEventListener = __webpack_require__(0);
-
-var _ContextMenuEventListener2 = _interopRequireDefault(_ContextMenuEventListener);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1791,23 +1557,23 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'contextmenu',
         value: function contextmenu(e) {
-            var $this = $(this);
+            var $this = $(e.currentTarget);
 
-            if (!e._contextMenuData) {
+            if (!e.data) {
                 throw new Error('No data attached');
             }
 
-            if (e._contextMenuData.trigger === 'right') {
+            if (e.data.trigger === 'right') {
                 e.preventDefault();
                 e.stopImmediatePropagation();
             }
 
-            if (e._contextMenuData.trigger !== 'right' && e._contextMenuData.trigger !== 'demand' && e.originalEvent) {
+            if (e.data.trigger !== 'right' && e.data.trigger !== 'demand' && e.originalEvent) {
                 return;
             }
 
             if (typeof e.mouseButton !== 'undefined') {
-                if (!(e._contextMenuData.trigger === 'left' && e.mouseButton === 0) && !(e._contextMenuData.trigger === 'right' && e.mouseButton === 2)) {
+                if (!(e.data.trigger === 'left' && e.mouseButton === 0) && !(e.data.trigger === 'right' && e.mouseButton === 2)) {
                     return;
                 }
             }
@@ -1818,17 +1584,17 @@ var ContextMenuEventHandler = function () {
 
             if (!$this.hasClass('context-menu-disabled')) {
 
-                e._contextMenuData.manager.handler.$currentTrigger = $this;
-                if (e._contextMenuData.build) {
-                    var built = e._contextMenuData.build(e, $this);
+                e.data.manager.handler.$currentTrigger = $this;
+                if (e.data.build) {
+                    var built = e.data.build(e, $this);
 
                     if (built === false) {
                         return;
                     }
 
-                    e._contextMenuData = $.extend(true, {}, _defaults2.default, e._contextMenuData, built || {});
+                    e.data = $.extend(true, {}, _defaults2.default, e.data, built || {});
 
-                    if (!e._contextMenuData.items || $.isEmptyObject(e._contextMenuData.items)) {
+                    if (!e.data.items || $.isEmptyObject(e.data.items)) {
                         if (window.console) {
                             (console.error || console.log).call(console, 'No items specified to show in contextMenu');
                         }
@@ -1836,29 +1602,12 @@ var ContextMenuEventHandler = function () {
                         throw new Error('No Items specified');
                     }
 
-                    e._contextMenuData.$trigger = e._contextMenuData.manager.handler.$currentTrigger;
+                    e.data.$trigger = e.data.manager.handler.$currentTrigger;
 
-                    e._contextMenuData.manager.operations.create(e, e._contextMenuData);
+                    e.data.manager.operations.create(e, e.data);
                 }
-                var showMenu = false;
 
-                Object.keys(e._contextMenuData.items).forEach(function (key) {
-                    var visible = void 0;
-                    if (typeof e._contextMenuData.items[key].visible === 'function') {
-                        visible = e._contextMenuData.items[key].visible.call($this, e, key, e._contextMenuData, e._contextMenuData);
-                    } else if (typeof e._contextMenuData.items[key].visible !== 'undefined') {
-                        visible = e._contextMenuData.items[key].visible === true;
-                    } else {
-                        visible = true;
-                    }
-                    if (visible) {
-                        showMenu = true;
-                    }
-                });
-
-                if (showMenu) {
-                    e._contextMenuData.manager.operations.show.call($this, e, e._contextMenuData, e.pageX, e.pageY);
-                }
+                e.data.manager.operations.show.call($this, e, e.data, e.pageX, e.pageY);
             }
         }
     }, {
@@ -1866,30 +1615,33 @@ var ContextMenuEventHandler = function () {
         value: function click(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            e._contextMenuData.manager.triggerEvent(this, 'contextmenu', { data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e });
+            $(this).trigger($.Event('contextmenu', { data: e.data, pageX: e.pageX, pageY: e.pageY, originalEvent: e }));
         }
     }, {
         key: 'mousedown',
         value: function mousedown(e) {
             var $this = $(this);
 
-            if (e._contextMenuData.manager.handler.$currentTrigger && e._contextMenuData.manager.handler.$currentTrigger.length && !e._contextMenuData.manager.handler.$currentTrigger.is($this)) {
-                e._contextMenuData.manager.triggerEvent(e._contextMenuData.manager.handler.$currentTrigger.data('contextMenu').$menu.get(0), 'contextmenu', { data: e._contextMenuData, originalEvent: e });
+            if (e.data.manager.handler.$currentTrigger && e.data.manager.handler.$currentTrigger.length && !e.data.manager.handler.$currentTrigger.is($this)) {
+                e.data.manager.handler.$currentTrigger.data('contextMenu').$menu.trigger($.Event('contextmenu', {
+                    data: e.data,
+                    originalEvent: e
+                }));
             }
 
             if (e.button === 2) {
-                e._contextMenuData.manager.handler.$currentTrigger = $this.data('contextMenuActive', true);
+                e.data.manager.handler.$currentTrigger = $this.data('contextMenuActive', true);
             }
         }
     }, {
         key: 'mouseup',
         value: function mouseup(e) {
             var $this = $(this);
-            if ($this.data('contextMenuActive') && e._contextMenuData.manager.handler.$currentTrigger && e._contextMenuData.manager.handler.$currentTrigger.length && e._contextMenuData.manager.handler.$currentTrigger.is($this) && !$this.hasClass('context-menu-disabled')) {
+            if ($this.data('contextMenuActive') && e.data.manager.handler.$currentTrigger && e.data.manager.handler.$currentTrigger.length && e.data.manager.handler.$currentTrigger.is($this) && !$this.hasClass('context-menu-disabled')) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
-                e._contextMenuData.manager.handler.$currentTrigger = $this;
-                e._contextMenuData.manager.triggerEvent(this, 'contextmenu', { data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e });
+                e.data.manager.handler.$currentTrigger = $this;
+                $this.trigger($.Event('contextmenu', { data: e.data, pageX: e.pageX, pageY: e.pageY, originalEvent: e }));
             }
 
             $this.removeData('contextMenuActive');
@@ -1899,24 +1651,36 @@ var ContextMenuEventHandler = function () {
         value: function mouseenter(e) {
             var $this = $(this);
             var $related = $(e.relatedTarget);
+            var $document = $(document);
 
             if ($related.is('.context-menu-list') || $related.closest('.context-menu-list').length) {
                 return;
             }
 
-            if (e._contextMenuData.manager.handler.$currentTrigger && e._contextMenuData.manager.handler.$currentTrigger.length) {
+            if (e.data.manager.handler.$currentTrigger && e.data.manager.handler.$currentTrigger.length) {
                 return;
             }
 
-            e._contextMenuData.manager.handler.hoveract.pageX = e.pageX;
-            e._contextMenuData.manager.handler.hoveract.pageY = e.pageY;
-            e._contextMenuData.manager.handler.hoveract.data = e._contextMenuData;
+            e.data.manager.handler.hoveract.pageX = e.pageX;
+            e.data.manager.handler.hoveract.pageY = e.pageY;
+            e.data.manager.handler.hoveract.data = e.data;
+            $document.on('mousemove.contextMenuShow', e.data.manager.handler.mousemove);
+            e.data.manager.handler.hoveract.timer = setTimeout(function () {
+                e.data.manager.handler.hoveract.timer = null;
+                $document.off('mousemove.contextMenuShow');
+                e.data.manager.handler.$currentTrigger = $this;
+                $this.trigger($.Event('contextmenu', {
+                    data: e.data.manager.handler.hoveract.data,
+                    pageX: e.data.manager.handler.hoveract.pageX,
+                    pageY: e.data.manager.handler.hoveract.pageY
+                }));
+            }, e.data.delay);
         }
     }, {
         key: 'mousemove',
         value: function mousemove(e) {
-            e._contextMenuData.manager.handler.hoveract.pageX = e.pageX;
-            e._contextMenuData.manager.handler.hoveract.pageY = e.pageY;
+            e.data.manager.handler.hoveract.pageX = e.pageX;
+            e.data.manager.handler.hoveract.pageY = e.pageY;
         }
     }, {
         key: 'mouseleave',
@@ -1927,15 +1691,17 @@ var ContextMenuEventHandler = function () {
             }
 
             try {
-                clearTimeout(e._contextMenuData.manager.handler.hoveract.timer);
+                clearTimeout(e.data.manager.handler.hoveract.timer);
             } catch (e) {}
 
-            e._contextMenuData.manager.handler.hoveract.timer = null;
+            e.data.manager.handler.hoveract.timer = null;
         }
     }, {
         key: 'layerClick',
         value: function layerClick(e) {
-            var root = e._contextMenuData;
+            var $this = $(this);
+
+            var root = $this.data('contextMenuRoot');
 
             if (root === null || typeof root === 'undefined') {
                 throw new Error('No ContextMenuData found');
@@ -1944,12 +1710,20 @@ var ContextMenuEventHandler = function () {
             var button = e.button;
             var x = e.pageX;
             var y = e.pageY;
+            var fakeClick = x === undefined;
             var target = void 0;
             var offset = void 0;
 
             e.preventDefault();
 
             setTimeout(function () {
+                if (fakeClick) {
+                    if (root.$menu !== null && typeof root.$menu !== 'undefined') {
+                        root.$menu.trigger('contextmenu:hide', { data: root, originalEvent: e });
+                    }
+                    return;
+                }
+
                 var $window = $(window);
                 var triggerAction = root.trigger === 'left' && button === 0 || root.trigger === 'right' && button === 2;
 
@@ -1965,12 +1739,12 @@ var ContextMenuEventHandler = function () {
                         sel.removeAllRanges();
                         sel.addRange(range);
                     }
-                    root.manager.triggerEvent(target, e);
+                    $(target).trigger(e);
                     root.$layer.show();
                 }
 
                 if (root.hideOnSecondTrigger && triggerAction && root.$menu !== null && typeof root.$menu !== 'undefined') {
-                    root.manager.triggerEvent(root.$menu.get(0), 'contextmenu:hide', { data: root, originalEvent: e });
+                    root.$menu.trigger('contextmenu:hide', { data: root, originalEvent: e });
                     return;
                 }
 
@@ -2008,7 +1782,7 @@ var ContextMenuEventHandler = function () {
                 }
 
                 if (root.$menu !== null && typeof root.$menu !== 'undefined') {
-                    root.manager.triggerEvent(root.$menu.get(0), 'contextmenu:hide', { data: root, originalEvent: e });
+                    root.$menu.trigger('contextmenu:hide', { data: root, originalEvent: e });
                 }
             }, 50);
         }
@@ -2026,8 +1800,8 @@ var ContextMenuEventHandler = function () {
         value: function key(e) {
             var rootMenuData = {};
 
-            if (e._contextMenuData.manager.handler.$currentTrigger) {
-                rootMenuData = e._contextMenuData.manager.handler.$currentTrigger.data('contextMenu') || {};
+            if (e.data.manager.handler.$currentTrigger) {
+                rootMenuData = e.data.manager.handler.$currentTrigger.data('contextMenu') || {};
             }
 
             if (typeof rootMenuData.zIndex === 'undefined') {
@@ -2052,7 +1826,7 @@ var ContextMenuEventHandler = function () {
             switch (e.keyCode) {
                 case 9:
                 case 38:
-                    e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
+                    e.data.manager.handler.keyStop(e, rootMenuData);
 
                     if (rootMenuData.isInput) {
                         if (e.keyCode === 9 && e.shiftKey) {
@@ -2061,7 +1835,7 @@ var ContextMenuEventHandler = function () {
                                 rootMenuData.$selected.find('input, textarea, select').blur();
                             }
                             if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                                rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', { data: rootMenuData, originalEvent: e });
+                                rootMenuData.$menu.trigger('prevcommand', { data: rootMenuData, originalEvent: e });
                             }
                             return;
                         } else if (e.keyCode === 38 && rootMenuData.$selected.find('input, textarea, select').prop('type') === 'checkbox') {
@@ -2070,14 +1844,14 @@ var ContextMenuEventHandler = function () {
                         }
                     } else if (e.keyCode !== 9 || e.shiftKey) {
                         if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                            rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', { data: rootMenuData, originalEvent: e });
+                            rootMenuData.$menu.trigger('prevcommand', { data: rootMenuData, originalEvent: e });
                         }
                         return;
                     }
                     break;
 
                 case 40:
-                    e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
+                    e.data.manager.handler.keyStop(e, rootMenuData);
                     if (rootMenuData.isInput) {
                         if (e.keyCode === 9) {
                             e.preventDefault();
@@ -2085,7 +1859,7 @@ var ContextMenuEventHandler = function () {
                                 rootMenuData.$selected.find('input, textarea, select').blur();
                             }
                             if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                                rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', { data: rootMenuData, originalEvent: e });
+                                rootMenuData.$menu.trigger('nextcommand', { data: rootMenuData, originalEvent: e });
                             }
                             return;
                         } else if (e.keyCode === 40 && rootMenuData.$selected.find('input, textarea, select').prop('type') === 'checkbox') {
@@ -2094,28 +1868,28 @@ var ContextMenuEventHandler = function () {
                         }
                     } else {
                         if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                            rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', { data: rootMenuData, originalEvent: e });
+                            rootMenuData.$menu.trigger('nextcommand', { data: rootMenuData, originalEvent: e });
                         }
                         return;
                     }
                     break;
 
                 case 37:
-                    e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
+                    e.data.manager.handler.keyStop(e, rootMenuData);
                     if (rootMenuData.isInput || !rootMenuData.$selected || !rootMenuData.$selected.length) {
                         break;
                     }
 
                     if (!rootMenuData.$selected.parent().hasClass('context-menu-root')) {
                         var $parent = rootMenuData.$selected.parent().parent();
-                        rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', { data: rootMenuData, originalEvent: e });
+                        rootMenuData.$selected.trigger('contextmenu:blur', { data: rootMenuData, originalEvent: e });
                         rootMenuData.$selected = $parent;
                         return;
                     }
                     break;
 
                 case 39:
-                    e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
+                    e.data.manager.handler.keyStop(e, rootMenuData);
                     if (rootMenuData.isInput || !rootMenuData.$selected || !rootMenuData.$selected.length) {
                         break;
                     }
@@ -2124,7 +1898,7 @@ var ContextMenuEventHandler = function () {
                     if (itemdata.$menu && rootMenuData.$selected.hasClass('context-menu-submenu')) {
                         rootMenuData.$selected = null;
                         itemdata.$selected = null;
-                        rootMenuData.manager.triggerEvent(itemdata.$menu.get(0), 'nextcommand', { data: itemdata, originalEvent: e });
+                        itemdata.$menu.trigger('nextcommand', { data: itemdata, originalEvent: e });
                         return;
                     }
                     break;
@@ -2135,12 +1909,11 @@ var ContextMenuEventHandler = function () {
                         break;
                     } else {
                         (rootMenuData.$selected && rootMenuData.$selected.parent() || rootMenuData.$menu).children(':not(.' + rootMenuData.classNames.disabled + ', .' + rootMenuData.classNames.notSelectable + ')')[e.keyCode === 36 ? 'first' : 'last']().trigger('contextmenu:focus', { data: rootMenuData, originalEvent: e });
-
                         e.preventDefault();
                         break;
                     }
                 case 13:
-                    e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
+                    e.data.manager.handler.keyStop(e, rootMenuData);
                     if (rootMenuData.isInput) {
                         if (rootMenuData.$selected && !rootMenuData.$selected.is('textarea, select')) {
                             e.preventDefault();
@@ -2149,28 +1922,29 @@ var ContextMenuEventHandler = function () {
                         break;
                     }
                     if (typeof rootMenuData.$selected !== 'undefined' && rootMenuData.$selected !== null) {
-                        rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'mouseup', { data: rootMenuData, originalEvent: e });
+                        rootMenuData.$selected.trigger('mouseup', { data: rootMenuData, originalEvent: e });
                     }
                     return;
                 case 32:
                 case 33:
                 case 34:
-                    e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
+                    e.data.manager.handler.keyStop(e, rootMenuData);
                     return;
 
                 case 27:
-                    e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
+                    e.data.manager.handler.keyStop(e, rootMenuData);
                     if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                        rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide', { data: rootMenuData, originalEvent: e });
+                        rootMenuData.$menu.trigger('contextmenu:hide', { data: rootMenuData, originalEvent: e });
                     }
                     return;
 
                 default:
                     var k = String.fromCharCode(e.keyCode).toUpperCase();
                     if (rootMenuData.accesskeys && rootMenuData.accesskeys[k]) {
-                        var eventName = rootMenuData.accesskeys[k].$menu ? 'contextmenu:focus' : 'mouseup';
-                        rootMenuData.manager.triggerEvent(rootMenuData.accesskeys[k].$node.get(0), eventName, { data: rootMenuData, originalEvent: e });
-
+                        rootMenuData.accesskeys[k].$node.trigger(rootMenuData.accesskeys[k].$menu ? 'contextmenu:focus' : 'mouseup', {
+                            data: rootMenuData,
+                            originalEvent: e
+                        });
                         return;
                     }
                     break;
@@ -2178,7 +1952,7 @@ var ContextMenuEventHandler = function () {
 
             e.stopPropagation();
             if (typeof rootMenuData.$selected !== 'undefined' && rootMenuData.$selected !== null) {
-                rootMenuData.$selected.get(0).dispatchEvent(e);
+                rootMenuData.$selected.trigger(e);
             }
         }
     }, {
@@ -2284,14 +2058,13 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'menuMouseenter',
         value: function menuMouseenter(e) {
-            console.log('menuMouseenter');
-            var root = e._contextMenuData;
+            var root = $(this).data().contextMenuRoot;
             root.hovering = true;
         }
     }, {
         key: 'menuMouseleave',
         value: function menuMouseleave(e) {
-            var root = e._contextMenuData;
+            var root = $(this).data().contextMenuRoot;
             if (root.$layer && root.$layer.is(e.relatedTarget)) {
                 root.hovering = false;
             }
@@ -2299,7 +2072,6 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'itemMouseenter',
         value: function itemMouseenter(e) {
-            console.log('itemMouseenter');
             var $this = $(this);
             var data = $this.data();
             var currentMenuData = data.contextMenu;
@@ -2313,20 +2085,17 @@ var ContextMenuEventHandler = function () {
             }
 
             var targetMenu = currentMenuData.$menu ? currentMenuData : rootMenuData;
-
-            var children = targetMenu.$menu.children('.' + rootMenuData.classNames.hover);
-
-            children.each(function (i, e) {
-                console.log('Blur itemMouseenter');
-                rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', { data: targetMenu, originalEvent: e }, false);
-            });
+            targetMenu.$menu.children('.' + rootMenuData.classNames.hover).trigger('contextmenu:blur', {
+                data: targetMenu,
+                originalEvent: e
+            }).children('.hover').trigger('contextmenu:blur', { data: targetMenu, originalEvent: e });
 
             if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
                 currentMenuData.$selected = null;
                 return;
             }
 
-            rootMenuData.manager.triggerEvent(this, 'contextmenu:focus', { data: currentMenuData, originalEvent: e });
+            $this.trigger('contextmenu:focus', { data: currentMenuData, originalEvent: e });
         }
     }, {
         key: 'itemMouseleave',
@@ -2338,8 +2107,7 @@ var ContextMenuEventHandler = function () {
 
             if (rootMenuData !== currentMenuData && rootMenuData.$layer && rootMenuData.$layer.is(e.relatedTarget)) {
                 if (typeof rootMenuData.$selected !== 'undefined' && rootMenuData.$selected !== null) {
-                    console.log('blur itemmouseleave');
-                    rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', { data: rootMenuData, originalEvent: e });
+                    rootMenuData.$selected.trigger('contextmenu:blur', { data: rootMenuData, originalEvent: e });
                 }
                 e.preventDefault();
                 e.stopImmediatePropagation();
@@ -2351,8 +2119,7 @@ var ContextMenuEventHandler = function () {
                 return;
             }
 
-            console.log('blur itemmouseleave 2', this);
-            rootMenuData.manager.triggerEvent(this, 'contextmenu:blur', { data: currentMenuData });
+            $this.trigger('contextmenu:blur');
         }
     }, {
         key: 'itemClick',
@@ -2380,7 +2147,7 @@ var ContextMenuEventHandler = function () {
             }
 
             if (callback.call(rootMenuData.$trigger, e, key, currentMenuData, rootMenuData) !== false) {
-                rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide');
+                rootMenuData.$menu.trigger('contextmenu:hide');
             } else if (rootMenuData.$menu.parent().length) {
                 rootMenuData.manager.operations.update.call(rootMenuData.$trigger, e, rootMenuData);
             }
@@ -2400,7 +2167,6 @@ var ContextMenuEventHandler = function () {
         key: 'focusItem',
         value: function focusItem(e) {
             e.stopPropagation();
-
             var $this = $(this);
             var data = $this.data();
             var currentMenuData = data.contextMenu;
@@ -2410,15 +2176,7 @@ var ContextMenuEventHandler = function () {
                 return;
             }
 
-            var $element = $this.addClass([rootMenuData.classNames.hover, rootMenuData.classNames.visible].join(' ')).parent().find('.context-menu-item').not($this).removeClass(rootMenuData.classNames.visible).filter('.' + rootMenuData.classNames.hover);
-
-            if ($element.length > 0) {
-                console.log('blur focusitem list', $element, $this);
-                $element.each(function (i, e) {
-                    console.log('blur focusitem ');
-                    rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', { data: currentMenuData }, false);
-                });
-            }
+            $this.addClass([rootMenuData.classNames.hover, rootMenuData.classNames.visible].join(' ')).parent().find('.context-menu-item').not($this).removeClass(rootMenuData.classNames.visible).filter('.' + rootMenuData.classNames.hover).trigger('contextmenu:blur');
 
             currentMenuData.$selected = rootMenuData.$selected = $this;
 
@@ -2427,14 +2185,12 @@ var ContextMenuEventHandler = function () {
             }
 
             if (currentMenuData.$node) {
-                console.log('Focus and position', $this.get(0), currentMenuData.$node.get(0), currentMenuData.$menu.get(0));
                 rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
             }
         }
     }, {
         key: 'blurItem',
         value: function blurItem(e) {
-            console.log('bluritem', this);
             e.stopPropagation();
             var $this = $(this);
             var data = $this.data();
@@ -2456,7 +2212,7 @@ exports.default = ContextMenuEventHandler;
 ;
 
 /***/ }),
-/* 11 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2509,6 +2265,12 @@ exports.default = function (operation) {
 
     return this;
 };
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
 
 /***/ })
 /******/ ]);
