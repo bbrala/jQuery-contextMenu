@@ -1,4 +1,4 @@
-() => banner@keyframes cm-spin {
+@keyframes cm-spin {
   0% {
     transform: translateY(-50%) rotate(0deg); }
   100% {
@@ -6,8 +6,8 @@
 
 @font-face {
   font-family: "context-menu-icons";
-  src: url("font/context-menu-icons.eot?4crg2");
-  src: url("font/context-menu-icons.eot?4crg2#iefix") format("embedded-opentype"), url("font/context-menu-icons.woff2?4crg2") format("woff2"), url("font/context-menu-icons.woff?4crg2") format("woff"), url("font/context-menu-icons.ttf?4crg2") format("truetype");
+  src: url("font/context-menu-icons.eot?4wdhf");
+  src: url("font/context-menu-icons.eot?4wdhf#iefix") format("embedded-opentype"), url("font/context-menu-icons.woff2?4wdhf") format("woff2"), url("font/context-menu-icons.woff?4wdhf") format("woff"), url("font/context-menu-icons.ttf?4wdhf") format("truetype");
   font-weight: normal;
   font-style: normal; }
 

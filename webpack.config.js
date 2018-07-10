@@ -6,6 +6,7 @@ const UnminifiedWebpackPlugin = require('unminified-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const packageJson = require('./package');
 const banner = `
+/**
 jQuery contextMenu v${packageJson.version} - Plugin for simple contextMenu handling
 
 Version: v${packageJson.version}
@@ -20,7 +21,7 @@ Licensed under
   MIT License http://www.opensource.org/licenses/mit-license
 
 Date: ${(new Date()).toISOString()}
-
+**/
 `;
 
 module.exports = {
@@ -31,7 +32,7 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'jquery.contextMenu.min.js',
         library: 'ContextMenu',
-        libraryTarget: 'umd'
+        libraryTarget: 'var'
     },
     module: {
         rules: [
@@ -80,11 +81,11 @@ module.exports = {
         ]
     },
     plugins: [
-        new webpack.BannerPlugin({
-            banner: banner, // the banner as string, it will be wrapped in a comment
-            raw: false, // if true, banner will not be wrapped in a comment
-            entryOnly: false // if true, the banner will only be added to the entry chunks
-        }),
+        // new webpack.BannerPlugin({
+        //     banner: banner, // the banner as string, it will be wrapped in a comment
+        //     raw: true, // if true, banner will not be wrapped in a comment
+        //     entryOnly: true // if true, the banner will only be added to the entry chunks
+        // }),
         new ExtractTextPlugin({
             filename: 'jquery.contextMenu.min.css'
         }),
