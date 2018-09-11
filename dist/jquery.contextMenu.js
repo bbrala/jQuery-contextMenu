@@ -201,6 +201,7 @@ var ContextMenu = function () {
             options = this.buildOptions(options);
 
             var $visibleMenu = void 0;
+
             if (options._hasContext) {
                 var context = options.context;
 
@@ -220,21 +221,18 @@ var ContextMenu = function () {
                         _this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', { force: true });
                     }
 
+                    _this.removeListeners(o.ns);
+
                     if (_this.menus[o.ns].$menu) {
                         _this.menus[o.ns].$menu.remove();
                     }
                     delete _this.menus[o.ns];
 
-                    $(o.context).off(o.ns);
                     return true;
                 });
             } else if (!options.selector) {
-                $(document).off('.contextMenu .contextMenuAutoHide');
 
-                Object.keys(this.menus).forEach(function (ns) {
-                    var o = _this.menus[ns];
-                    $(o.context).off(o.ns);
-                });
+                this.removeListeners();
 
                 this.namespaces = {};
                 this.menus = {};
@@ -248,12 +246,14 @@ var ContextMenu = function () {
                     this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', { force: true });
                 }
 
-                if (this.menus[this.namespaces[options.selector]].$menu) {
-                    this.menus[this.namespaces[options.selector]].$menu.remove();
+                var namespace = this.namespaces[options.selector];
+
+                this.removeListeners(namespace);
+
+                if (this.menus[namespace].$menu) {
+                    this.menus[namespace].$menu.remove();
                 }
                 delete this.menus[this.namespaces[options.selector]];
-
-                $(document).off(this.namespaces[options.selector]);
             }
             this.handler.$currentTrigger = null;
         }
@@ -447,6 +447,24 @@ var ContextMenu = function () {
         value: function getVisibleMenus() {
             return Array.prototype.filter.call(document.querySelectorAll('.context-menu-list'), function (element) {
                 return _ContextMenuHelper2.default.isVisible(element);
+            });
+        }
+    }, {
+        key: 'removeListeners',
+        value: function removeListeners(namespace) {
+            var _this3 = this;
+
+            var namespaces = [namespace];
+            if (!namespace) {
+                namespaces = Object.values(this.namespaces);
+            }
+
+            namespaces.forEach(function (ns) {
+                if (_this3.menus[ns] && _this3.menus[ns].listeners) {
+                    Object.keys(_this3.menus[ns].listeners).forEach(function (key) {
+                        _this3.menus[ns].listeners[key].destruct();
+                    });
+                }
             });
         }
     }]);

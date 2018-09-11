@@ -110,6 +110,8 @@ export default class ContextMenu {
         options = this.buildOptions(options);
 
         let $visibleMenu;
+
+        // todo Context is deprecated in jQuery, perhaps just remove this way?
         if (options._hasContext) {
             // get proper options
             const context = options.context;
@@ -132,21 +134,25 @@ export default class ContextMenu {
                     this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', {force: true});
                 }
 
+
+                this.removeListeners(o.ns);
+
+
                 if (this.menus[o.ns].$menu) {
                     this.menus[o.ns].$menu.remove();
                 }
                 delete this.menus[o.ns];
 
-                $(o.context).off(o.ns);
+                // todo JQuery?
+                // $(o.context).off(o.ns);
+
                 return true;
             });
         } else if (!options.selector) {
-            $(document).off('.contextMenu .contextMenuAutoHide');
+            // todo JQuery?
+            // $(document).off('.contextMenu .contextMenuAutoHide');
 
-            Object.keys(this.menus).forEach((ns) => {
-                let o = this.menus[ns];
-                $(o.context).off(o.ns);
-            });
+            this.removeListeners();
 
             this.namespaces = {};
             this.menus = {};
@@ -160,12 +166,17 @@ export default class ContextMenu {
                 this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', {force: true});
             }
 
-            if (this.menus[this.namespaces[options.selector]].$menu) {
-                this.menus[this.namespaces[options.selector]].$menu.remove();
+            let namespace = this.namespaces[options.selector];
+
+            this.removeListeners(namespace);
+
+            if (this.menus[namespace].$menu) {
+                this.menus[namespace].$menu.remove();
             }
             delete this.menus[this.namespaces[options.selector]];
 
-            $(document).off(this.namespaces[options.selector]);
+            // not needed
+            // $(document).off(this.namespaces[options.selector]);
         }
         this.handler.$currentTrigger = null;
     }
@@ -437,4 +448,26 @@ export default class ContextMenu {
            return ContextMenuHelper.isVisible(element)
         });
     }
+
+    /**
+     * Removes all event listner
+     *
+     * @param {string?} namespace Namespace of the contextmenu to destroy, no value means all
+     */
+    removeListeners(namespace){
+        let namespaces = [namespace];
+        if(!namespace) {
+            namespaces = Object.values(this.namespaces);
+        }
+
+        namespaces.forEach((ns) => {
+            if (this.menus[ns] && this.menus[ns].listeners) {
+                Object.keys(this.menus[ns].listeners).forEach((key) => {
+                    this.menus[ns].listeners[key].destruct();
+                });
+            }
+        });
+    }
+
+
 }
