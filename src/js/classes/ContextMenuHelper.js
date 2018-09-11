@@ -3,6 +3,11 @@
  * @classdesc Few helper static functions
  */
 export default class ContextMenuHelper {
+
+    static isVisible(elem) {
+        return !!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length );
+    }
+
     static matchesSelector(el, selector) {
         const method =
             el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;

@@ -158,7 +158,9 @@ export default class ContextMenuOperations {
         // collapse all submenus
         menuData.$menu.find('.' + menuData.classNames.visible).removeClass(menuData.classNames.visible);
         // unregister key and mouse handlers
-        menuData.listeners.contextMenuAutoHide.destruct();
+        if(menuData.listeners.contextMenuAutoHide){
+            menuData.listeners.contextMenuAutoHide.destruct();
+        }
         menuData.listeners.document.off('keydown');
 
         // hide menu

@@ -205,7 +205,8 @@ export default class ContextMenuEventHandler {
         e._contextMenuData.manager.handler.hoveract.pageX = e.pageX;
         e._contextMenuData.manager.handler.hoveract.pageY = e.pageY;
         e._contextMenuData.manager.handler.hoveract.data = e._contextMenuData;
-        //
+
+        // todo: auto hide delay?
         // console.log('========== temp mouseenter');
         // let eventListener = new ContextMenuEventListener(document, e._contextMenuData);
         // eventListener.on('mousemove', e._contextMenuData.manager.handler.mousemove);
@@ -473,7 +474,7 @@ export default class ContextMenuEventHandler {
 
                 if (!rootMenuData.$selected.parent().hasClass('context-menu-root')) {
                     const $parent = rootMenuData.$selected.parent().parent();
-                    rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', {data: rootMenuData, originalEvent: e});
+                    rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', {data: rootMenuData, originalEvent: e}, false);
                     rootMenuData.$selected = $parent;
                     return;
                 }
@@ -501,7 +502,7 @@ export default class ContextMenuEventHandler {
                 } else {
                     ((rootMenuData.$selected && rootMenuData.$selected.parent()) || rootMenuData.$menu)
                         .children(':not(.' + rootMenuData.classNames.disabled + ', .' + rootMenuData.classNames.notSelectable + ')')[e.keyCode === 36 ? 'first' : 'last']()
-                        .trigger('contextmenu:focus', {data: rootMenuData, originalEvent: e});
+                        .trigger('contextmenu:focus', {data: rootMenuData, originalEvent: e}, false);
                     // @todo weird event?
                     e.preventDefault();
                     break;
@@ -540,7 +541,7 @@ export default class ContextMenuEventHandler {
                     rootMenuData.accesskeys[k].$node.trigger(rootMenuData.accesskeys[k].$menu ? 'contextmenu:focus' : 'mouseup', {
                         data: rootMenuData,
                         originalEvent: e
-                    });
+                    }, false);
                     return;
                 }
                 break;
@@ -697,7 +698,6 @@ export default class ContextMenuEventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     menuMouseenter(e) {
-        console.log('menuMouseenter');
         let root = e._contextMenuData;
         root.hovering = true;
     }
@@ -724,7 +724,6 @@ export default class ContextMenuEventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     itemMouseenter(e) {
-        console.log('itemMouseenter');
         let $this = $(this);
         let data = $this.data();
         let currentMenuData = data.contextMenu;
@@ -740,21 +739,14 @@ export default class ContextMenuEventHandler {
 
         // make sure only one item is selected
         let targetMenu = (currentMenuData.$menu ? currentMenuData : rootMenuData);
-        // @todo trigger?
-        let children = targetMenu.$menu
-            .children('.' + rootMenuData.classNames.hover);
-
-        children.each((i, e) => {
-            console.log('Blur itemMouseenter');
-            rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', {data: targetMenu, originalEvent: e}, false);
-        });
 
         if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
             currentMenuData.$selected = null;
             return;
         }
 
-        rootMenuData.manager.triggerEvent(this, 'contextmenu:focus', {data: currentMenuData, originalEvent: e});
+        e.stopPropagation();
+        rootMenuData.manager.triggerEvent(this, 'contextmenu:focus', {data: currentMenuData, originalEvent: e}, false);
     }
 
     /**
@@ -772,8 +764,9 @@ export default class ContextMenuEventHandler {
 
         if (rootMenuData !== currentMenuData && rootMenuData.$layer && rootMenuData.$layer.is(e.relatedTarget)) {
             if (typeof rootMenuData.$selected !== 'undefined' && rootMenuData.$selected !== null) {
-                console.log('blur itemmouseleave');
-                rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', {data: rootMenuData, originalEvent: e});
+                console.log('blur itemmouseleave?');
+                // todo handled somewhere else?
+                // rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', {data: rootMenuData, originalEvent: e}, false);
             }
             e.preventDefault();
             e.stopImmediatePropagation();
@@ -784,9 +777,6 @@ export default class ContextMenuEventHandler {
         if (currentMenuData && currentMenuData.$menu && currentMenuData.$menu.hasClass(rootMenuData.classNames.visible)) {
             return;
         }
-
-        console.log('blur itemmouseleave 2', this);
-        rootMenuData.manager.triggerEvent(this, 'contextmenu:blur', {data: currentMenuData});
     }
 
     /**
@@ -884,9 +874,8 @@ export default class ContextMenuEventHandler {
             .filter('.' + rootMenuData.classNames.hover);
 
         if ($element.length > 0) {
-            console.log('blur focusitem list', $element, $this)
+            // Blur other elements in this menu
             $element.each(function (i, e) {
-                console.log('blur focusitem ');
                 rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', {data: currentMenuData}, false);
             });
         }
@@ -900,7 +889,6 @@ export default class ContextMenuEventHandler {
 
         // position sub-menu - do after show so dumb $.ui.position can keep up
         if (currentMenuData.$node) {
-            console.log('Focus and position', $this.get(0), currentMenuData.$node.get(0), currentMenuData.$menu.get(0));
             rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
         }
     }
@@ -913,10 +901,10 @@ export default class ContextMenuEventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     blurItem(e) {
-        console.log('bluritem', this);
         e.stopPropagation();
         const $this = $(this);
         const data = $this.data();
+
         const currentMenuData = data.contextMenu;
         const rootMenuData = data.contextMenuRoot;
 

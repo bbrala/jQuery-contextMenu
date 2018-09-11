@@ -16,7 +16,6 @@ class ContextMenuEventListener {
             window.instanceId = 0;
         }
         this.instanceId = window.instanceId++;
-        console.log('New listener', el, this.instanceId);
 
         this.contextMenuData = contextMenuData || null;
         this.el = el;
@@ -58,7 +57,6 @@ class ContextMenuEventListener {
      * @returns {ContextMenuEventListener}
      */
     off(eventName, selector, callback) {
-        // console.log('Off', eventName, selector, callback);
         if (typeof selector !== 'string') {
             callback = selector;
             selector = '';
@@ -105,7 +103,6 @@ class ContextMenuEventListener {
      * @return {this}
      */
     on(eventName, selector, callback, data = false) {
-        console.log('On', eventName, selector, this.instanceId);
         if (typeof eventName !== 'string') {
             const eventsMap = eventName;
             for (let key in eventsMap) {
@@ -158,7 +155,6 @@ class ContextMenuEventListener {
      * @private
      */
     _onEvent(event) {
-        console.log('Handling event', event.type, event);
 
         let isPropagationStopped = false;
         let stopPropagation = event.stopPropagation;
@@ -175,18 +171,11 @@ class ContextMenuEventListener {
 
         let target = event.target;
 
-        console.log(event.target);
-
         const events = this.events[event.type.toLowerCase()];
         const eventData = this.eventData[event.type.toLowerCase()];
 
-        if (event.type === 'contextmenu:focus') {
-            console.group('focusstack');
-        }
         // eslint-disable-next-line no-unmodified-loop-condition
         while (target && target !== this.el && isPropagationStopped === false) {
-            console.log('find target for ' + event.type, target);
-
             for (let selector in events) {
                 if (
                     selector && eventData && eventData.hasOwnProperty(selector) && Helper.matchesSelector(target, selector)) {
@@ -195,7 +184,6 @@ class ContextMenuEventListener {
 
                 if (selector && events.hasOwnProperty(selector) && Helper.matchesSelector(target, selector)) {
                     this.context = target;
-                    console.log('find target for ' + event.type + '- FOUND ' + selector, target);
                     this.callAll(events[selector], event, this.context);
                 }
             }
@@ -204,11 +192,8 @@ class ContextMenuEventListener {
                 break;
             }
         }
-        if (event.type === 'contextmenu:focus') {
-            console.groupEnd();
-        }
+
         if (isPropagationStopped === false && events.hasOwnProperty('')) {
-            console.log('calling all');
             this.callAll(events[''], event, this.context);
         }
     }

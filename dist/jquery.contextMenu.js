@@ -123,6 +123,10 @@ var _ContextMenuEventListener = __webpack_require__(/*! ./ContextMenuEventListen
 
 var _ContextMenuEventListener2 = _interopRequireDefault(_ContextMenuEventListener);
 
+var _ContextMenuHelper = __webpack_require__(/*! ./ContextMenuHelper */ "./src/js/classes/ContextMenuHelper.js");
+
+var _ContextMenuHelper2 = _interopRequireDefault(_ContextMenuHelper);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -434,10 +438,16 @@ var ContextMenu = function () {
             var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
             var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
 
-            console.log('Trigger', eventName, 'on', el);
             var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
             el.dispatchEvent(event);
             return !event.defaultPrevented;
+        }
+    }, {
+        key: 'getVisibleMenus',
+        value: function getVisibleMenus() {
+            return Array.prototype.filter.call(document.querySelectorAll('.context-menu-list'), function (element) {
+                return _ContextMenuHelper2.default.isVisible(element);
+            });
         }
     }]);
 
@@ -818,7 +828,7 @@ var ContextMenuEventHandler = function () {
 
                     if (!rootMenuData.$selected.parent().hasClass('context-menu-root')) {
                         var $parent = rootMenuData.$selected.parent().parent();
-                        rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', { data: rootMenuData, originalEvent: e });
+                        rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', { data: rootMenuData, originalEvent: e }, false);
                         rootMenuData.$selected = $parent;
                         return;
                     }
@@ -844,7 +854,7 @@ var ContextMenuEventHandler = function () {
                     if (rootMenuData.$selected && rootMenuData.$selected.find('input, textarea, select').length) {
                         break;
                     } else {
-                        (rootMenuData.$selected && rootMenuData.$selected.parent() || rootMenuData.$menu).children(':not(.' + rootMenuData.classNames.disabled + ', .' + rootMenuData.classNames.notSelectable + ')')[e.keyCode === 36 ? 'first' : 'last']().trigger('contextmenu:focus', { data: rootMenuData, originalEvent: e });
+                        (rootMenuData.$selected && rootMenuData.$selected.parent() || rootMenuData.$menu).children(':not(.' + rootMenuData.classNames.disabled + ', .' + rootMenuData.classNames.notSelectable + ')')[e.keyCode === 36 ? 'first' : 'last']().trigger('contextmenu:focus', { data: rootMenuData, originalEvent: e }, false);
 
                         e.preventDefault();
                         break;
@@ -881,7 +891,7 @@ var ContextMenuEventHandler = function () {
                         rootMenuData.accesskeys[k].$node.trigger(rootMenuData.accesskeys[k].$menu ? 'contextmenu:focus' : 'mouseup', {
                             data: rootMenuData,
                             originalEvent: e
-                        });
+                        }, false);
                         return;
                     }
                     break;
@@ -995,7 +1005,6 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'menuMouseenter',
         value: function menuMouseenter(e) {
-            console.log('menuMouseenter');
             var root = e._contextMenuData;
             root.hovering = true;
         }
@@ -1010,7 +1019,6 @@ var ContextMenuEventHandler = function () {
     }, {
         key: 'itemMouseenter',
         value: function itemMouseenter(e) {
-            console.log('itemMouseenter');
             var $this = $(this);
             var data = $this.data();
             var currentMenuData = data.contextMenu;
@@ -1025,19 +1033,13 @@ var ContextMenuEventHandler = function () {
 
             var targetMenu = currentMenuData.$menu ? currentMenuData : rootMenuData;
 
-            var children = targetMenu.$menu.children('.' + rootMenuData.classNames.hover);
-
-            children.each(function (i, e) {
-                console.log('Blur itemMouseenter');
-                rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', { data: targetMenu, originalEvent: e }, false);
-            });
-
             if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
                 currentMenuData.$selected = null;
                 return;
             }
 
-            rootMenuData.manager.triggerEvent(this, 'contextmenu:focus', { data: currentMenuData, originalEvent: e });
+            e.stopPropagation();
+            rootMenuData.manager.triggerEvent(this, 'contextmenu:focus', { data: currentMenuData, originalEvent: e }, false);
         }
     }, {
         key: 'itemMouseleave',
@@ -1049,8 +1051,7 @@ var ContextMenuEventHandler = function () {
 
             if (rootMenuData !== currentMenuData && rootMenuData.$layer && rootMenuData.$layer.is(e.relatedTarget)) {
                 if (typeof rootMenuData.$selected !== 'undefined' && rootMenuData.$selected !== null) {
-                    console.log('blur itemmouseleave');
-                    rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', { data: rootMenuData, originalEvent: e });
+                    console.log('blur itemmouseleave?');
                 }
                 e.preventDefault();
                 e.stopImmediatePropagation();
@@ -1061,9 +1062,6 @@ var ContextMenuEventHandler = function () {
             if (currentMenuData && currentMenuData.$menu && currentMenuData.$menu.hasClass(rootMenuData.classNames.visible)) {
                 return;
             }
-
-            console.log('blur itemmouseleave 2', this);
-            rootMenuData.manager.triggerEvent(this, 'contextmenu:blur', { data: currentMenuData });
         }
     }, {
         key: 'itemClick',
@@ -1124,9 +1122,7 @@ var ContextMenuEventHandler = function () {
             var $element = $this.addClass([rootMenuData.classNames.hover, rootMenuData.classNames.visible].join(' ')).parent().find('.context-menu-item').not($this).removeClass(rootMenuData.classNames.visible).filter('.' + rootMenuData.classNames.hover);
 
             if ($element.length > 0) {
-                console.log('blur focusitem list', $element, $this);
                 $element.each(function (i, e) {
-                    console.log('blur focusitem ');
                     rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', { data: currentMenuData }, false);
                 });
             }
@@ -1138,17 +1134,16 @@ var ContextMenuEventHandler = function () {
             }
 
             if (currentMenuData.$node) {
-                console.log('Focus and position', $this.get(0), currentMenuData.$node.get(0), currentMenuData.$menu.get(0));
                 rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
             }
         }
     }, {
         key: 'blurItem',
         value: function blurItem(e) {
-            console.log('bluritem', this);
             e.stopPropagation();
             var $this = $(this);
             var data = $this.data();
+
             var currentMenuData = data.contextMenu;
             var rootMenuData = data.contextMenuRoot;
 
@@ -1197,7 +1192,6 @@ var ContextMenuEventListener = function () {
             window.instanceId = 0;
         }
         this.instanceId = window.instanceId++;
-        console.log('New listener', el, this.instanceId);
 
         this.contextMenuData = contextMenuData || null;
         this.el = el;
@@ -1255,7 +1249,6 @@ var ContextMenuEventListener = function () {
         value: function on(eventName, selector, callback) {
             var data = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
-            console.log('On', eventName, selector, this.instanceId);
             if (typeof eventName !== 'string') {
                 var eventsMap = eventName;
                 for (var key in eventsMap) {
@@ -1305,7 +1298,6 @@ var ContextMenuEventListener = function () {
     }, {
         key: '_onEvent',
         value: function _onEvent(event) {
-            console.log('Handling event', event.type, event);
 
             var isPropagationStopped = false;
             var stopPropagation = event.stopPropagation;
@@ -1322,18 +1314,10 @@ var ContextMenuEventListener = function () {
 
             var target = event.target;
 
-            console.log(event.target);
-
             var events = this.events[event.type.toLowerCase()];
             var eventData = this.eventData[event.type.toLowerCase()];
 
-            if (event.type === 'contextmenu:focus') {
-                console.group('focusstack');
-            }
-
             while (target && target !== this.el && isPropagationStopped === false) {
-                console.log('find target for ' + event.type, target);
-
                 for (var selector in events) {
                     if (selector && eventData && eventData.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
                         event._extraContextMenuData = eventData[selector];
@@ -1341,7 +1325,6 @@ var ContextMenuEventListener = function () {
 
                     if (selector && events.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
                         this.context = target;
-                        console.log('find target for ' + event.type + '- FOUND ' + selector, target);
                         this.callAll(events[selector], event, this.context);
                     }
                 }
@@ -1350,11 +1333,8 @@ var ContextMenuEventListener = function () {
                     break;
                 }
             }
-            if (event.type === 'contextmenu:focus') {
-                console.groupEnd();
-            }
+
             if (isPropagationStopped === false && events.hasOwnProperty('')) {
-                console.log('calling all');
                 this.callAll(events[''], event, this.context);
             }
         }
@@ -1398,6 +1378,11 @@ var ContextMenuHelper = function () {
     }
 
     _createClass(ContextMenuHelper, null, [{
+        key: 'isVisible',
+        value: function isVisible(elem) {
+            return !!(elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length);
+        }
+    }, {
         key: 'matchesSelector',
         value: function matchesSelector(el, selector) {
             var method = el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;
@@ -1833,7 +1818,9 @@ var ContextMenuOperations = function () {
 
             menuData.$menu.find('.' + menuData.classNames.visible).removeClass(menuData.classNames.visible);
 
-            menuData.listeners.contextMenuAutoHide.destruct();
+            if (menuData.listeners.contextMenuAutoHide) {
+                menuData.listeners.contextMenuAutoHide.destruct();
+            }
             menuData.listeners.document.off('keydown');
 
             if (menuData.$menu) {
@@ -2499,7 +2486,6 @@ function position(e, currentMenuData, x, y) {
 }
 
 function positionSubmenu(e, $menu) {
-    console.log('Position', $menu);
     if (typeof $menu === 'undefined') {
         return;
     }

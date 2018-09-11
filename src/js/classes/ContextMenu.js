@@ -3,6 +3,7 @@ import defaults from '../defaults';
 import ContextMenuHtml5Builder from './ContextMenuHtml5Builder';
 import ContextMenuEventHandler from './ContextMenuEventHandler';
 import ContextMenuEventListener from './ContextMenuEventListener';
+import ContextMenuHelper from "./ContextMenuHelper";
 
 export default class ContextMenu {
     /**
@@ -124,6 +125,7 @@ export default class ContextMenu {
                 if (!$(context).is(o.selector)) {
                     return true;
                 }
+
 
                 $visibleMenu = $('.context-menu-list').filter(':visible');
                 if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is($(o.context).find(o.selector))) {
@@ -425,9 +427,14 @@ export default class ContextMenu {
      * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
      */
     triggerEvent(el, eventName, data = {}, bubbles = true, cancelable = true) {
-        console.log('Trigger', eventName, 'on', el);
         const event = new CustomEvent(eventName, {detail: data, bubbles: bubbles, cancelable: cancelable});
         el.dispatchEvent(event);
         return !event.defaultPrevented;
+    }
+
+    getVisibleMenus() {
+        return Array.prototype.filter.call(document.querySelectorAll('.context-menu-list'), (element) => {
+           return ContextMenuHelper.isVisible(element)
+        });
     }
 }
