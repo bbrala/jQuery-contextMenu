@@ -1,5 +1,4 @@
 import defaults from '../defaults';
-import ContextMenuEventListener from './ContextMenuEventListener'
 
 /**
  * @typedef {jQuery.Event} ContextMenuEvent
@@ -7,9 +6,9 @@ import ContextMenuEventListener from './ContextMenuEventListener'
  * @property {ContextMenuData} _contextMenuData
  */
 
-export default class ContextMenuEventHandler {
+export default class EventHandler {
     /**
-     * @constructs ContextMenuEventHandler
+     * @constructs EventHandler
      * @constructor
      * @property {?JQuery} $currentTrigger
      * @property {Object} hoveract
@@ -23,7 +22,7 @@ export default class ContextMenuEventHandler {
      * Helper to abort an event
      *
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -35,7 +34,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -128,7 +127,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -141,7 +140,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -163,7 +162,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -183,7 +182,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -208,7 +207,7 @@ export default class ContextMenuEventHandler {
 
         // todo: auto hide delay?
         // console.log('========== temp mouseenter');
-        // let eventListener = new ContextMenuEventListener(document, e._contextMenuData);
+        // let eventListener = new EventListener(document, e._contextMenuData);
         // eventListener.on('mousemove', e._contextMenuData.manager.handler.mousemove);
         // e._contextMenuData.manager.handler.hoveract.timer = setTimeout(() => {
         //     e._contextMenuData.manager.handler.hoveract.timer = null;
@@ -226,7 +225,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -238,7 +237,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -261,7 +260,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -361,7 +360,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -377,7 +376,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -556,7 +555,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -608,7 +607,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -659,7 +658,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -676,7 +675,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -692,7 +691,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -704,7 +703,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -718,7 +717,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -751,7 +750,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -781,7 +780,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -823,7 +822,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -834,7 +833,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -847,7 +846,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e
@@ -895,7 +894,7 @@ export default class ContextMenuEventHandler {
 
     /**
      * @method
-     * @memberOf ContextMenuEventHandler
+     * @memberOf EventHandler
      * @instance
      *
      * @param {ContextMenuEvent|JQuery.Event} e

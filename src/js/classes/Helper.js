@@ -1,13 +1,22 @@
 /**
- * @class ContextMenuHelper
+ * @class Helper
  * @classdesc Few helper static functions
  */
-export default class ContextMenuHelper {
+export default class Helper {
 
+    /**
+     * @param elem
+     * @returns {boolean}
+     */
     static isVisible(elem) {
         return !!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length );
     }
 
+    /**
+     * @param el
+     * @param selector
+     * @returns {boolean}
+     */
     static matchesSelector(el, selector) {
         const method =
             el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;
@@ -16,7 +25,7 @@ export default class ContextMenuHelper {
 
     /**
      * Calculates zIndex of an element
-     * @memberOf ContextMenuHelper
+     * @memberOf Helper
      * @method zindex
      * @static
      * @param {JQuery} $t - Element to calculate z-index of.
@@ -38,7 +47,7 @@ export default class ContextMenuHelper {
 
     /**
      * Split accesskey according to http://www.whatwg.org/specs/web-apps/current-work/multipage/editing.html#assigned-access-key
-     * @memberOf ContextMenuHelper
+     * @memberOf Helper
      * @method splitAccesskey
      * @static
      * @param {string} val - Accesskey value

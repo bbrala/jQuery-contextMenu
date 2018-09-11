@@ -1,9 +1,9 @@
-import ContextMenuOperations from './ContextMenuOperations';
+import Operations from './Operations';
 import defaults from '../defaults';
-import ContextMenuHtml5Builder from './ContextMenuHtml5Builder';
-import ContextMenuEventHandler from './ContextMenuEventHandler';
-import ContextMenuEventListener from './ContextMenuEventListener';
-import ContextMenuHelper from "./ContextMenuHelper";
+import Html5Builder from './Html5Builder';
+import EventHandler from './EventHandler';
+import EventListener from './EventListener';
+import Helper from "./Helper";
 
 export default class ContextMenu {
     /**
@@ -18,17 +18,17 @@ export default class ContextMenu {
      * manager.execute("create", options);
      *
      * @property {ContextMenuOptions|Object} defaults
-     * @property {ContextMenuEventHandler} handle
-     * @property {ContextMenuOperations} operations
+     * @property {EventHandler} handle
+     * @property {Operations} operations
      * @property {Object<string, ContextMenuData>} menus
      * @property {number} counter - Internal counter to keep track of different menu's on the page.
      * @property {boolean} initialized - Flag the menu as initialized.
      */
     constructor() {
-        this.html5builder = new ContextMenuHtml5Builder();
+        this.html5builder = new Html5Builder();
         this.defaults = defaults;
-        this.handler = new ContextMenuEventHandler();
-        this.operations = new ContextMenuOperations();
+        this.handler = new EventHandler();
+        this.operations = new Operations();
         this.namespaces = {};
         this.initialized = false;
         this.menus = {};
@@ -208,7 +208,7 @@ export default class ContextMenu {
         }
         if (typeof options.listeners === 'undefined') {
             options.listeners = {
-                document: new ContextMenuEventListener(document, options)
+                document: new EventListener(document, options)
             };
         }
 
@@ -245,7 +245,7 @@ export default class ContextMenu {
         }
 
         if (options._hasContext) {
-            options.listeners.context = new ContextMenuEventListener(options.context.get(0), options);
+            options.listeners.context = new EventListener(options.context.get(0), options);
         } else {
             options.listeners.context = options.listeners.document;
         }
@@ -445,7 +445,7 @@ export default class ContextMenu {
 
     getVisibleMenus() {
         return Array.prototype.filter.call(document.querySelectorAll('.context-menu-list'), (element) => {
-           return ContextMenuHelper.isVisible(element)
+           return Helper.isVisible(element)
         });
     }
 

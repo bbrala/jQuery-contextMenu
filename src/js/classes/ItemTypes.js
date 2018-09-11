@@ -23,7 +23,7 @@
  Check out the [demo using a promise](demo/async-promise.md) for an example how to use this. The example uses jQuery deferred, but any promise should do. Promised can only be used in combination with the [build option](docs#build).
 
  *
- * @property {ContextMenuItemTypes|string} type - Specifies the type of the command. See {@link ContextMenuItemTypes}.
+ * @property {ItemTypes|string} type - Specifies the type of the command. See {@link ItemTypes}.
  * @property {string} name - Specify the human readable name of the command in the menu. This is used as the label for the option.
  * @property {boolean} isHtmlName - Should this item be called with .html() instead of .text(). Cannot be used with the accesskey option in the same item.
  * @property {Object.<string,ContextMenuItem>} items Object containing the menu items for creating a submenu.
@@ -41,19 +41,19 @@
  * @property {?JQuery} $input - The input element if it was build for this item.
  * @property {Object<string, Function>} events - Events to register on a {@link ContextMenuItem}. The contents of the options object are passed as jQuery `e.data`.
  * @property {string} value - The value of the `<input>` element.
- * @property {boolean|string} selected - The selected option of a `select` element and the checked property for `checkbox` and `radio` {@link ContextMenuItemTypes}.
+ * @property {boolean|string} selected - The selected option of a `select` element and the checked property for `checkbox` and `radio` {@link ItemTypes}.
  * @property {string} radio - Specifies the group of the `radio` element.
  * @property {string} options - Specifies the options of the `select` element.
  * @property {Number} height - The height in pixels `<textarea>` element. If not specified, the height is defined by CSS.
  * @property {Object<string, ContextMenuItem>} items - Items to show in a sub-menu. You can nest as many as you like.
- * @property {Object<string, ContextMenuEventListener>} listeners - ContextMenuEventListener on this item.
+ * @property {Object<string, EventListener>} listeners - EventListener on this item.
  */
 
 /**
  * Possible ContextMenuItem types
  * @enum string
  */
-const ContextMenuItemTypes = {
+const ItemTypes = {
     /**
      * The command is a simple clickable item.
      */
@@ -100,4 +100,4 @@ const ContextMenuItemTypes = {
     submenu: 'sub'
 };
 
-export default ContextMenuItemTypes;
+export default ItemTypes;

@@ -1,8 +1,8 @@
 'use strict';
 import '../sass/jquery.contextMenu.scss';
 import ContextMenu from './classes/ContextMenu';
-import ContextMenuItemTypes from './classes/ContextMenuItemTypes';
-import elementFunction from './jquery/contextMenuFunction';
+import ItemTypes from './classes/ItemTypes';
+import elementFunction from './jquery/contextMenu';
 
 /**
  * The jQuery namespace.
@@ -21,10 +21,10 @@ import elementFunction from './jquery/contextMenuFunction';
  * @property {ContextMenu} manager
  * @property {getInputValues} getInputValues
  * @property {setInputValues} setInputValues
- * @property {fromMenu} ContextMenuHtml5Builder#fromMenu
+ * @property {fromMenu} Html5Builder#fromMenu
  * @property {ContextMenuOptions} defaults
- * @property {ContextMenuEventHandler} handle
- * @property {ContextMenuOperations} operations
+ * @property {EventHandler} handle
+ * @property {Operations} operations
  * @property {Object<string, ContextMenuData>} menus
  */
 const manager = new ContextMenu();
@@ -58,4 +58,4 @@ contextMenu.namespaces = manager.namespaces;
 $.fn.contextMenu = elementFunction;
 $.contextMenu = contextMenu;
 
-module.exports = {ContextMenu, ContextMenuItemTypes};
+module.exports = {ContextMenu, ContextMenuItemTypes: ItemTypes};

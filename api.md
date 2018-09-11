@@ -51,7 +51,7 @@
 <dd></dd>
 <dt><a href="#ContextMenuEventHandlers">ContextMenuEventHandlers</a> : <code>Object</code></dt>
 <dd></dd>
-<dt><a href="#ContextMenuOperations">ContextMenuOperations</a> : <code>Object</code></dt>
+<dt><a href="#Operations">Operations</a> : <code>Object</code></dt>
 <dd></dd>
 </dl>
 
@@ -65,7 +65,7 @@
 | --- | --- |
 | defaults | [<code>ContextMenuSettings</code>](#ContextMenuSettings) | 
 | handle | [<code>ContextMenuEventHandlers</code>](#ContextMenuEventHandlers) | 
-| op | [<code>ContextMenuOperations</code>](#ContextMenuOperations) | 
+| op | [<code>Operations</code>](#ContextMenuOperations) | 
 | menus | <code>Object.&lt;string, ContextMenuData&gt;</code> | 
 | counter | <code>number</code> | 
 | initialized | <code>boolean</code> | 
@@ -283,9 +283,9 @@ Helper function for building a menu from a HTML <menu> element
 | $currentTrigger | <code>JQuery</code> | 
 | hoveract | <code>Object</code> | 
 
-<a name="ContextMenuOperations"></a>
+<a name="Operations"></a>
 
-## ContextMenuOperations : <code>Object</code>
+## Operations : <code>Object</code>
 **Kind**: global typedef  
 **Properties**
 

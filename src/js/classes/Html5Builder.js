@@ -1,5 +1,5 @@
 /**
- * @class ContextMenuHtml5Builder
+ * @class Html5Builder
  * @classdesc considering the following HTML `$.contextMenu.fromMenu($('#html5menu'))` will return a proper items object.
 
  ```
@@ -52,12 +52,12 @@
  ```
 
  */
-export default class ContextMenuHtml5Builder {
+export default class Html5Builder {
     /**
      * Get the input label for the given node.
      *
      * @method inputLabel
-     * @memberOf ContextMenuHtml5Builder
+     * @memberOf Html5Builder
      * @instance
      *
      * @param {HTMLElement} node - Html element
@@ -71,7 +71,7 @@ export default class ContextMenuHtml5Builder {
      * Helper function to build ContextMenuItems from an html5 menu element.
      *
      * @method fromMenu
-     * @memberOf ContextMenuHtml5Builder
+     * @memberOf Html5Builder
      * @instance
      *
      * @param {JQuery|string} element - Menu element or selector to generate the menu from.
@@ -90,7 +90,7 @@ export default class ContextMenuHtml5Builder {
      * Helper function for building a menu from a HTML menu element.
      *
      * @method build
-     * @memberOf ContextMenuHtml5Builder
+     * @memberOf Html5Builder
      * @instance
      *
      * @param {Object.<string, ContextMenuItem>} items - {@link ContextMenuItem} object to build.

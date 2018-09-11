@@ -1,11 +1,11 @@
-import ContextMenuHelper from './ContextMenuHelper';
-import ContextMenuItemTypes from './ContextMenuItemTypes';
-import ContextMenuEventListener from './ContextMenuEventListener';
+import Helper from './Helper';
+import ItemTypes from './ItemTypes';
+import EventListener from './EventListener';
 
-export default class ContextMenuOperations {
+export default class Operations {
     /**
      * @constructor
-     * @constructs ContextMenuOperations
+     * @constructs Operations
      */
     constructor() {
         return this;
@@ -15,7 +15,7 @@ export default class ContextMenuOperations {
      * Show the menu.
      *
      * @method
-     * @memberOf ContextMenuOperations
+     * @memberOf Operations
      * @instance
      *
      * @param {JQuery.Event} e
@@ -59,7 +59,7 @@ export default class ContextMenuOperations {
             if (typeof menuData.zIndex === 'function') {
                 additionalZValue = menuData.zIndex.call($trigger, menuData);
             }
-            css.zIndex = ContextMenuHelper.zindex($trigger) + additionalZValue;
+            css.zIndex = Helper.zindex($trigger) + additionalZValue;
         }
 
         // add layer
@@ -109,7 +109,7 @@ export default class ContextMenuOperations {
      * Hide the menu.
      *
      * @method
-     * @memberOf ContextMenuOperations
+     * @memberOf Operations
      * @instance
      *
      * @param {JQuery.Event} e
@@ -198,7 +198,7 @@ export default class ContextMenuOperations {
      * Create a menu based on the options. Also created submenus.
      *
      * @method
-     * @memberOf ContextMenuOperations
+     * @memberOf Operations
      * @instance
      *
      * @param {JQuery.Event} e
@@ -269,7 +269,7 @@ export default class ContextMenuOperations {
             // awkward later.
             // And normalize 'cm_separator' into 'cm_separator'.
             if (typeof item === 'string' || item.type === 'cm_seperator') {
-                item = {type: ContextMenuItemTypes.separator};
+                item = {type: ItemTypes.separator};
             }
 
             item.$node = $t.data({
@@ -285,7 +285,7 @@ export default class ContextMenuOperations {
             // register accesskey
             // NOTE: the accesskey attribute should be applicable to any element, but Safari5 and Chrome13 still can't do that
             if (typeof item.accesskey !== 'undefined') {
-                const aks = ContextMenuHelper.splitAccesskey(item.accesskey);
+                const aks = Helper.splitAccesskey(item.accesskey);
                 for (let i = 0, ak; ak = aks[i]; i++) {
                     if (!rootMenuData.accesskeys[ak]) {
                         rootMenuData.accesskeys[ak] = item;
@@ -314,11 +314,11 @@ export default class ContextMenuOperations {
                 });
             } else {
                 // add label for input
-                if (item.type === ContextMenuItemTypes.separator) {
+                if (item.type === ItemTypes.separator) {
                     $t.addClass('context-menu-separator ' + rootMenuData.classNames.notSelectable);
-                } else if (item.type === ContextMenuItemTypes.html) {
+                } else if (item.type === ItemTypes.html) {
                     $t.addClass('context-menu-html ' + rootMenuData.classNames.notSelectable);
-                } else if (item.type && item.type !== ContextMenuItemTypes.submenu) {
+                } else if (item.type && item.type !== ItemTypes.submenu) {
                     $label = $('<label></label>').appendTo($t);
                     createNameNode(item).appendTo($label);
 
@@ -329,21 +329,21 @@ export default class ContextMenuOperations {
                         k.inputs[key] = item;
                     });
                 } else if (item.items) {
-                    item.type = ContextMenuItemTypes.submenu;
+                    item.type = ItemTypes.submenu;
                 }
 
                 switch (item.type) {
-                    case ContextMenuItemTypes.separator:
+                    case ItemTypes.separator:
                         break;
 
-                    case ContextMenuItemTypes.text:
+                    case ItemTypes.text:
                         $input = $('<input type="text" value="1" name="" />')
                             .attr('name', 'context-menu-input-' + key)
                             .val(item.value || '')
                             .appendTo($label);
                         break;
 
-                    case ContextMenuItemTypes.textarea:
+                    case ItemTypes.textarea:
                         $input = $('<textarea name=""></textarea>')
                             .attr('name', 'context-menu-input-' + key)
                             .val(item.value || '')
@@ -354,7 +354,7 @@ export default class ContextMenuOperations {
                         }
                         break;
 
-                    case ContextMenuItemTypes.checkbox:
+                    case ItemTypes.checkbox:
                         $input = $('<input type="checkbox" value="1" name="" />')
                             .attr('name', 'context-menu-input-' + key)
                             .val(item.value || '')
@@ -362,7 +362,7 @@ export default class ContextMenuOperations {
                             .prependTo($label);
                         break;
 
-                    case ContextMenuItemTypes.radio:
+                    case ItemTypes.radio:
                         $input = $('<input type="radio" value="1" name="" />')
                             .attr('name', 'context-menu-input-' + item.radio)
                             .val(item.value || '')
@@ -370,7 +370,7 @@ export default class ContextMenuOperations {
                             .prependTo($label);
                         break;
 
-                    case ContextMenuItemTypes.select:
+                    case ItemTypes.select:
                         $input = $('<select name=""></select>')
                             .attr('name', 'context-menu-input-' + key)
                             .appendTo($label);
@@ -382,7 +382,7 @@ export default class ContextMenuOperations {
                         }
                         break;
 
-                    case ContextMenuItemTypes.submenu:
+                    case ItemTypes.submenu:
                         createNameNode(item).appendTo($t);
                         $t.addClass('item-' + item.name);
                         item.appendTo = item.$node;
@@ -402,7 +402,7 @@ export default class ContextMenuOperations {
                         }
                         break;
 
-                    case ContextMenuItemTypes.html:
+                    case ItemTypes.html:
                         $(item.html).appendTo($t);
                         break;
 
@@ -420,8 +420,8 @@ export default class ContextMenuOperations {
                 }
 
                 // disable key listener in <input>
-                if (item.type && item.type !== ContextMenuItemTypes.submenu && item.type !== ContextMenuItemTypes.html && item.type !== ContextMenuItemTypes.separator) {
-                    item.listeners.input = new ContextMenuEventListener($input.get(0), rootMenuData);
+                if (item.type && item.type !== ItemTypes.submenu && item.type !== ItemTypes.html && item.type !== ItemTypes.separator) {
+                    item.listeners.input = new EventListener($input.get(0), rootMenuData);
                     item.listeners.input
                         .on('focus', rootMenuData.manager.handler.focusInput)
                         .on('blur', rootMenuData.manager.handler.blurInput);
@@ -474,7 +474,7 @@ export default class ContextMenuOperations {
      * Resize the menu to its content.
      *
      * @method
-     * @memberOf ContextMenuOperations
+     * @memberOf Operations
      * @instance
      *
      * @param {ContextMenuEvent} e
@@ -522,7 +522,7 @@ export default class ContextMenuOperations {
      * Update the contextmenu, re-evaluates the whole menu (including disabled/visible callbacks)
      *
      * @method
-     * @memberOf ContextMenuOperations
+     * @memberOf Operations
      * @instance
      *
      * @param {JQuery.Event} e
@@ -578,17 +578,17 @@ export default class ContextMenuOperations {
 
                 // update input states
                 switch (item.type) {
-                    case ContextMenuItemTypes.text:
-                    case ContextMenuItemTypes.textarea:
+                    case ItemTypes.text:
+                    case ItemTypes.textarea:
                         item.$input.val(item.value || '');
                         break;
 
-                    case ContextMenuItemTypes.checkbox:
-                    case ContextMenuItemTypes.radio:
+                    case ItemTypes.checkbox:
+                    case ItemTypes.radio:
                         item.$input.val(item.value || '').prop('checked', !!item.selected);
                         break;
 
-                    case ContextMenuItemTypes.select:
+                    case ItemTypes.select:
                         item.$input.val((item.selected === 0 ? '0' : item.selected) || '');
                         break;
                 }
@@ -610,7 +610,7 @@ export default class ContextMenuOperations {
      * Create the overlay layer so we can capture the click outside the menu and close it.
      *
      * @method
-     * @memberOf ContextMenuOperations
+     * @memberOf Operations
      * @instance
      *
      * @param {JQuery.Event} e
@@ -639,7 +639,7 @@ export default class ContextMenuOperations {
             .data('contextMenuRoot', menuData)
             .insertBefore(this);
 
-        menuData.listeners.layer = new ContextMenuEventListener($layer.get(0), menuData);
+        menuData.listeners.layer = new EventListener($layer.get(0), menuData);
         menuData.listeners.layer
             .on('contextmenu', menuData.manager.handler.abortevent)
             .on('mousedown', menuData.manager.handler.layerClick);
@@ -659,7 +659,7 @@ export default class ContextMenuOperations {
      * Process submenu promise.
      *
      * @method
-     * @memberOf ContextMenuOperations
+     * @memberOf Operations
      * @instance
      *
      * @param {JQuery.Event} e
@@ -719,7 +719,7 @@ export default class ContextMenuOperations {
      * Operation that will run after contextMenu showed on screen.
      *
      * @method
-     * @memberOf ContextMenuOperations
+     * @memberOf Operations
      * @instance
      *
      * @param {JQuery.Event} e

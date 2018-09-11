@@ -1,5 +1,5 @@
 'use strict';
-import Helper from './ContextMenuHelper';
+import Helper from './Helper';
 
 const NOT_CAPTURED_EVENTS = [];// ['blur', 'focus', 'mouseenter', 'mouseleave', 'click', 'mouseup', 'mousedown', 'selectstart'];
 
@@ -10,7 +10,7 @@ const NOT_CAPTURED_EVENTS = [];// ['blur', 'focus', 'mouseenter', 'mouseleave', 
  * @param {ContextMenuData} contextMenuData ContextMenuData of menu this is bound to
  * @param {Element} context Optional context in which to execute the callbacks.
  */
-class ContextMenuEventListener {
+class EventListener {
     constructor(el, contextMenuData) {
         if (!window.instanceId) {
             window.instanceId = 0;
@@ -54,7 +54,7 @@ class ContextMenuEventListener {
      * @param {string?} selector
      * @param {Function?} callback
      *
-     * @returns {ContextMenuEventListener}
+     * @returns {EventListener}
      */
     off(eventName, selector, callback) {
         if (typeof selector !== 'string') {
@@ -205,4 +205,4 @@ class ContextMenuEventListener {
     }
 }
 
-module.exports = ContextMenuEventListener;
+module.exports = EventListener;

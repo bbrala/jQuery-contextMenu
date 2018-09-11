@@ -103,29 +103,29 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ContextMenuOperations = __webpack_require__(/*! ./ContextMenuOperations */ "./src/js/classes/ContextMenuOperations.js");
+var _Operations = __webpack_require__(/*! ./Operations */ "./src/js/classes/Operations.js");
 
-var _ContextMenuOperations2 = _interopRequireDefault(_ContextMenuOperations);
+var _Operations2 = _interopRequireDefault(_Operations);
 
 var _defaults = __webpack_require__(/*! ../defaults */ "./src/js/defaults/index.js");
 
 var _defaults2 = _interopRequireDefault(_defaults);
 
-var _ContextMenuHtml5Builder = __webpack_require__(/*! ./ContextMenuHtml5Builder */ "./src/js/classes/ContextMenuHtml5Builder.js");
+var _Html5Builder = __webpack_require__(/*! ./Html5Builder */ "./src/js/classes/Html5Builder.js");
 
-var _ContextMenuHtml5Builder2 = _interopRequireDefault(_ContextMenuHtml5Builder);
+var _Html5Builder2 = _interopRequireDefault(_Html5Builder);
 
-var _ContextMenuEventHandler = __webpack_require__(/*! ./ContextMenuEventHandler */ "./src/js/classes/ContextMenuEventHandler.js");
+var _EventHandler = __webpack_require__(/*! ./EventHandler */ "./src/js/classes/EventHandler.js");
 
-var _ContextMenuEventHandler2 = _interopRequireDefault(_ContextMenuEventHandler);
+var _EventHandler2 = _interopRequireDefault(_EventHandler);
 
-var _ContextMenuEventListener = __webpack_require__(/*! ./ContextMenuEventListener */ "./src/js/classes/ContextMenuEventListener.js");
+var _EventListener = __webpack_require__(/*! ./EventListener */ "./src/js/classes/EventListener.js");
 
-var _ContextMenuEventListener2 = _interopRequireDefault(_ContextMenuEventListener);
+var _EventListener2 = _interopRequireDefault(_EventListener);
 
-var _ContextMenuHelper = __webpack_require__(/*! ./ContextMenuHelper */ "./src/js/classes/ContextMenuHelper.js");
+var _Helper = __webpack_require__(/*! ./Helper */ "./src/js/classes/Helper.js");
 
-var _ContextMenuHelper2 = _interopRequireDefault(_ContextMenuHelper);
+var _Helper2 = _interopRequireDefault(_Helper);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -135,10 +135,10 @@ var ContextMenu = function () {
     function ContextMenu() {
         _classCallCheck(this, ContextMenu);
 
-        this.html5builder = new _ContextMenuHtml5Builder2.default();
+        this.html5builder = new _Html5Builder2.default();
         this.defaults = _defaults2.default;
-        this.handler = new _ContextMenuEventHandler2.default();
-        this.operations = new _ContextMenuOperations2.default();
+        this.handler = new _EventHandler2.default();
+        this.operations = new _Operations2.default();
         this.namespaces = {};
         this.initialized = false;
         this.menus = {};
@@ -279,7 +279,7 @@ var ContextMenu = function () {
             }
             if (typeof options.listeners === 'undefined') {
                 options.listeners = {
-                    document: new _ContextMenuEventListener2.default(document, options)
+                    document: new _EventListener2.default(document, options)
                 };
             }
 
@@ -302,7 +302,7 @@ var ContextMenu = function () {
             }
 
             if (options._hasContext) {
-                options.listeners.context = new _ContextMenuEventListener2.default(options.context.get(0), options);
+                options.listeners.context = new _EventListener2.default(options.context.get(0), options);
             } else {
                 options.listeners.context = options.listeners.document;
             }
@@ -446,7 +446,7 @@ var ContextMenu = function () {
         key: 'getVisibleMenus',
         value: function getVisibleMenus() {
             return Array.prototype.filter.call(document.querySelectorAll('.context-menu-list'), function (element) {
-                return _ContextMenuHelper2.default.isVisible(element);
+                return _Helper2.default.isVisible(element);
             });
         }
     }, {
@@ -476,10 +476,10 @@ exports.default = ContextMenu;
 
 /***/ }),
 
-/***/ "./src/js/classes/ContextMenuEventHandler.js":
-/*!***************************************************!*\
-  !*** ./src/js/classes/ContextMenuEventHandler.js ***!
-  \***************************************************/
+/***/ "./src/js/classes/EventHandler.js":
+/*!****************************************!*\
+  !*** ./src/js/classes/EventHandler.js ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -496,23 +496,19 @@ var _defaults = __webpack_require__(/*! ../defaults */ "./src/js/defaults/index.
 
 var _defaults2 = _interopRequireDefault(_defaults);
 
-var _ContextMenuEventListener = __webpack_require__(/*! ./ContextMenuEventListener */ "./src/js/classes/ContextMenuEventListener.js");
-
-var _ContextMenuEventListener2 = _interopRequireDefault(_ContextMenuEventListener);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ContextMenuEventHandler = function () {
-    function ContextMenuEventHandler() {
-        _classCallCheck(this, ContextMenuEventHandler);
+var EventHandler = function () {
+    function EventHandler() {
+        _classCallCheck(this, EventHandler);
 
         this.$currentTrigger = null;
         this.hoveract = {};
     }
 
-    _createClass(ContextMenuEventHandler, [{
+    _createClass(EventHandler, [{
         key: 'abortevent',
         value: function abortevent(e) {
             e.preventDefault();
@@ -1173,18 +1169,18 @@ var ContextMenuEventHandler = function () {
         }
     }]);
 
-    return ContextMenuEventHandler;
+    return EventHandler;
 }();
 
-exports.default = ContextMenuEventHandler;
+exports.default = EventHandler;
 ;
 
 /***/ }),
 
-/***/ "./src/js/classes/ContextMenuEventListener.js":
-/*!****************************************************!*\
-  !*** ./src/js/classes/ContextMenuEventListener.js ***!
-  \****************************************************/
+/***/ "./src/js/classes/EventListener.js":
+/*!*****************************************!*\
+  !*** ./src/js/classes/EventListener.js ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1193,18 +1189,18 @@ exports.default = ContextMenuEventHandler;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ContextMenuHelper = __webpack_require__(/*! ./ContextMenuHelper */ "./src/js/classes/ContextMenuHelper.js");
+var _Helper = __webpack_require__(/*! ./Helper */ "./src/js/classes/Helper.js");
 
-var _ContextMenuHelper2 = _interopRequireDefault(_ContextMenuHelper);
+var _Helper2 = _interopRequireDefault(_Helper);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var NOT_CAPTURED_EVENTS = [];
-var ContextMenuEventListener = function () {
-    function ContextMenuEventListener(el, contextMenuData) {
-        _classCallCheck(this, ContextMenuEventListener);
+var EventListener = function () {
+    function EventListener(el, contextMenuData) {
+        _classCallCheck(this, EventListener);
 
         if (!window.instanceId) {
             window.instanceId = 0;
@@ -1218,7 +1214,7 @@ var ContextMenuEventListener = function () {
         this._onEvent = this._onEvent.bind(this);
     }
 
-    _createClass(ContextMenuEventListener, [{
+    _createClass(EventListener, [{
         key: 'destruct',
         value: function destruct() {
             if (this.events !== null) {
@@ -1337,11 +1333,11 @@ var ContextMenuEventListener = function () {
 
             while (target && target !== this.el && isPropagationStopped === false) {
                 for (var selector in events) {
-                    if (selector && eventData && eventData.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
+                    if (selector && eventData && eventData.hasOwnProperty(selector) && _Helper2.default.matchesSelector(target, selector)) {
                         event._extraContextMenuData = eventData[selector];
                     }
 
-                    if (selector && events.hasOwnProperty(selector) && _ContextMenuHelper2.default.matchesSelector(target, selector)) {
+                    if (selector && events.hasOwnProperty(selector) && _Helper2.default.matchesSelector(target, selector)) {
                         this.context = target;
                         this.callAll(events[selector], event, this.context);
                     }
@@ -1365,17 +1361,17 @@ var ContextMenuEventListener = function () {
         }
     }]);
 
-    return ContextMenuEventListener;
+    return EventListener;
 }();
 
-module.exports = ContextMenuEventListener;
+module.exports = EventListener;
 
 /***/ }),
 
-/***/ "./src/js/classes/ContextMenuHelper.js":
-/*!*********************************************!*\
-  !*** ./src/js/classes/ContextMenuHelper.js ***!
-  \*********************************************/
+/***/ "./src/js/classes/Helper.js":
+/*!**********************************!*\
+  !*** ./src/js/classes/Helper.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1390,12 +1386,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ContextMenuHelper = function () {
-    function ContextMenuHelper() {
-        _classCallCheck(this, ContextMenuHelper);
+var Helper = function () {
+    function Helper() {
+        _classCallCheck(this, Helper);
     }
 
-    _createClass(ContextMenuHelper, null, [{
+    _createClass(Helper, null, [{
         key: 'isVisible',
         value: function isVisible(elem) {
             return !!(elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length);
@@ -1436,17 +1432,17 @@ var ContextMenuHelper = function () {
         }
     }]);
 
-    return ContextMenuHelper;
+    return Helper;
 }();
 
-exports.default = ContextMenuHelper;
+exports.default = Helper;
 
 /***/ }),
 
-/***/ "./src/js/classes/ContextMenuHtml5Builder.js":
-/*!***************************************************!*\
-  !*** ./src/js/classes/ContextMenuHtml5Builder.js ***!
-  \***************************************************/
+/***/ "./src/js/classes/Html5Builder.js":
+/*!****************************************!*\
+  !*** ./src/js/classes/Html5Builder.js ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1461,12 +1457,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ContextMenuHtml5Builder = function () {
-    function ContextMenuHtml5Builder() {
-        _classCallCheck(this, ContextMenuHtml5Builder);
+var Html5Builder = function () {
+    function Html5Builder() {
+        _classCallCheck(this, Html5Builder);
     }
 
-    _createClass(ContextMenuHtml5Builder, [{
+    _createClass(Html5Builder, [{
         key: 'inputLabel',
         value: function inputLabel(node) {
             return node.id && $('label[for="' + node.id + '"]').val() || node.name;
@@ -1646,17 +1642,17 @@ var ContextMenuHtml5Builder = function () {
         }
     }]);
 
-    return ContextMenuHtml5Builder;
+    return Html5Builder;
 }();
 
-exports.default = ContextMenuHtml5Builder;
+exports.default = Html5Builder;
 
 /***/ }),
 
-/***/ "./src/js/classes/ContextMenuItemTypes.js":
-/*!************************************************!*\
-  !*** ./src/js/classes/ContextMenuItemTypes.js ***!
-  \************************************************/
+/***/ "./src/js/classes/ItemTypes.js":
+/*!*************************************!*\
+  !*** ./src/js/classes/ItemTypes.js ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1667,7 +1663,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var ContextMenuItemTypes = {
+var ItemTypes = {
   simple: '',
 
   text: 'text',
@@ -1687,14 +1683,14 @@ var ContextMenuItemTypes = {
   submenu: 'sub'
 };
 
-exports.default = ContextMenuItemTypes;
+exports.default = ItemTypes;
 
 /***/ }),
 
-/***/ "./src/js/classes/ContextMenuOperations.js":
-/*!*************************************************!*\
-  !*** ./src/js/classes/ContextMenuOperations.js ***!
-  \*************************************************/
+/***/ "./src/js/classes/Operations.js":
+/*!**************************************!*\
+  !*** ./src/js/classes/Operations.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1709,30 +1705,30 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ContextMenuHelper = __webpack_require__(/*! ./ContextMenuHelper */ "./src/js/classes/ContextMenuHelper.js");
+var _Helper = __webpack_require__(/*! ./Helper */ "./src/js/classes/Helper.js");
 
-var _ContextMenuHelper2 = _interopRequireDefault(_ContextMenuHelper);
+var _Helper2 = _interopRequireDefault(_Helper);
 
-var _ContextMenuItemTypes = __webpack_require__(/*! ./ContextMenuItemTypes */ "./src/js/classes/ContextMenuItemTypes.js");
+var _ItemTypes = __webpack_require__(/*! ./ItemTypes */ "./src/js/classes/ItemTypes.js");
 
-var _ContextMenuItemTypes2 = _interopRequireDefault(_ContextMenuItemTypes);
+var _ItemTypes2 = _interopRequireDefault(_ItemTypes);
 
-var _ContextMenuEventListener = __webpack_require__(/*! ./ContextMenuEventListener */ "./src/js/classes/ContextMenuEventListener.js");
+var _EventListener = __webpack_require__(/*! ./EventListener */ "./src/js/classes/EventListener.js");
 
-var _ContextMenuEventListener2 = _interopRequireDefault(_ContextMenuEventListener);
+var _EventListener2 = _interopRequireDefault(_EventListener);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ContextMenuOperations = function () {
-    function ContextMenuOperations() {
-        _classCallCheck(this, ContextMenuOperations);
+var Operations = function () {
+    function Operations() {
+        _classCallCheck(this, Operations);
 
         return this;
     }
 
-    _createClass(ContextMenuOperations, [{
+    _createClass(Operations, [{
         key: 'show',
         value: function show(e, menuData, x, y) {
             var $trigger = $(e.target);
@@ -1765,7 +1761,7 @@ var ContextMenuOperations = function () {
                 if (typeof menuData.zIndex === 'function') {
                     additionalZValue = menuData.zIndex.call($trigger, menuData);
                 }
-                css.zIndex = _ContextMenuHelper2.default.zindex($trigger) + additionalZValue;
+                css.zIndex = _Helper2.default.zindex($trigger) + additionalZValue;
             }
 
             menuData.manager.operations.layer.call(menuData.$menu, e, menuData, css.zIndex);
@@ -1927,7 +1923,7 @@ var ContextMenuOperations = function () {
                 $t.on('click', $.noop);
 
                 if (typeof item === 'string' || item.type === 'cm_seperator') {
-                    item = { type: _ContextMenuItemTypes2.default.separator };
+                    item = { type: _ItemTypes2.default.separator };
                 }
 
                 item.$node = $t.data({
@@ -1941,7 +1937,7 @@ var ContextMenuOperations = function () {
                 }
 
                 if (typeof item.accesskey !== 'undefined') {
-                    var aks = _ContextMenuHelper2.default.splitAccesskey(item.accesskey);
+                    var aks = _Helper2.default.splitAccesskey(item.accesskey);
                     for (var i = 0, ak; ak = aks[i]; i++) {
                         if (!rootMenuData.accesskeys[ak]) {
                             rootMenuData.accesskeys[ak] = item;
@@ -1967,11 +1963,11 @@ var ContextMenuOperations = function () {
                         }
                     });
                 } else {
-                    if (item.type === _ContextMenuItemTypes2.default.separator) {
+                    if (item.type === _ItemTypes2.default.separator) {
                         $t.addClass('context-menu-separator ' + rootMenuData.classNames.notSelectable);
-                    } else if (item.type === _ContextMenuItemTypes2.default.html) {
+                    } else if (item.type === _ItemTypes2.default.html) {
                         $t.addClass('context-menu-html ' + rootMenuData.classNames.notSelectable);
-                    } else if (item.type && item.type !== _ContextMenuItemTypes2.default.submenu) {
+                    } else if (item.type && item.type !== _ItemTypes2.default.submenu) {
                         $label = $('<label></label>').appendTo($t);
                         createNameNode(item).appendTo($label);
 
@@ -1982,18 +1978,18 @@ var ContextMenuOperations = function () {
                             k.inputs[key] = item;
                         });
                     } else if (item.items) {
-                        item.type = _ContextMenuItemTypes2.default.submenu;
+                        item.type = _ItemTypes2.default.submenu;
                     }
 
                     switch (item.type) {
-                        case _ContextMenuItemTypes2.default.separator:
+                        case _ItemTypes2.default.separator:
                             break;
 
-                        case _ContextMenuItemTypes2.default.text:
+                        case _ItemTypes2.default.text:
                             $input = $('<input type="text" value="1" name="" />').attr('name', 'context-menu-input-' + key).val(item.value || '').appendTo($label);
                             break;
 
-                        case _ContextMenuItemTypes2.default.textarea:
+                        case _ItemTypes2.default.textarea:
                             $input = $('<textarea name=""></textarea>').attr('name', 'context-menu-input-' + key).val(item.value || '').appendTo($label);
 
                             if (item.height) {
@@ -2001,15 +1997,15 @@ var ContextMenuOperations = function () {
                             }
                             break;
 
-                        case _ContextMenuItemTypes2.default.checkbox:
+                        case _ItemTypes2.default.checkbox:
                             $input = $('<input type="checkbox" value="1" name="" />').attr('name', 'context-menu-input-' + key).val(item.value || '').prop('checked', !!item.selected).prependTo($label);
                             break;
 
-                        case _ContextMenuItemTypes2.default.radio:
+                        case _ItemTypes2.default.radio:
                             $input = $('<input type="radio" value="1" name="" />').attr('name', 'context-menu-input-' + item.radio).val(item.value || '').prop('checked', !!item.selected).prependTo($label);
                             break;
 
-                        case _ContextMenuItemTypes2.default.select:
+                        case _ItemTypes2.default.select:
                             $input = $('<select name=""></select>').attr('name', 'context-menu-input-' + key).appendTo($label);
                             if (item.options) {
                                 Object.keys(item.options).forEach(function (value) {
@@ -2019,7 +2015,7 @@ var ContextMenuOperations = function () {
                             }
                             break;
 
-                        case _ContextMenuItemTypes2.default.submenu:
+                        case _ItemTypes2.default.submenu:
                             createNameNode(item).appendTo($t);
                             $t.addClass('item-' + item.name);
                             item.appendTo = item.$node;
@@ -2034,7 +2030,7 @@ var ContextMenuOperations = function () {
                             }
                             break;
 
-                        case _ContextMenuItemTypes2.default.html:
+                        case _ItemTypes2.default.html:
                             $(item.html).appendTo($t);
                             break;
 
@@ -2050,8 +2046,8 @@ var ContextMenuOperations = function () {
                             break;
                     }
 
-                    if (item.type && item.type !== _ContextMenuItemTypes2.default.submenu && item.type !== _ContextMenuItemTypes2.default.html && item.type !== _ContextMenuItemTypes2.default.separator) {
-                        item.listeners.input = new _ContextMenuEventListener2.default($input.get(0), rootMenuData);
+                    if (item.type && item.type !== _ItemTypes2.default.submenu && item.type !== _ItemTypes2.default.html && item.type !== _ItemTypes2.default.separator) {
+                        item.listeners.input = new _EventListener2.default($input.get(0), rootMenuData);
                         item.listeners.input.on('focus', rootMenuData.manager.handler.focusInput).on('blur', rootMenuData.manager.handler.blurInput);
 
                         if (item.events) {
@@ -2162,17 +2158,17 @@ var ContextMenuOperations = function () {
                     $item.find('input, select, textarea').prop('disabled', disabled);
 
                     switch (item.type) {
-                        case _ContextMenuItemTypes2.default.text:
-                        case _ContextMenuItemTypes2.default.textarea:
+                        case _ItemTypes2.default.text:
+                        case _ItemTypes2.default.textarea:
                             item.$input.val(item.value || '');
                             break;
 
-                        case _ContextMenuItemTypes2.default.checkbox:
-                        case _ContextMenuItemTypes2.default.radio:
+                        case _ItemTypes2.default.checkbox:
+                        case _ItemTypes2.default.radio:
                             item.$input.val(item.value || '').prop('checked', !!item.selected);
                             break;
 
-                        case _ContextMenuItemTypes2.default.select:
+                        case _ItemTypes2.default.select:
                             item.$input.val((item.selected === 0 ? '0' : item.selected) || '');
                             break;
                     }
@@ -2206,7 +2202,7 @@ var ContextMenuOperations = function () {
                 'background-color': '#000'
             }).data('contextMenuRoot', menuData).insertBefore(this);
 
-            menuData.listeners.layer = new _ContextMenuEventListener2.default($layer.get(0), menuData);
+            menuData.listeners.layer = new _EventListener2.default($layer.get(0), menuData);
             menuData.listeners.layer.on('contextmenu', menuData.manager.handler.abortevent).on('mousedown', menuData.manager.handler.layerClick);
 
             if (typeof document.body.style.maxWidth === 'undefined') {
@@ -2283,10 +2279,10 @@ var ContextMenuOperations = function () {
         }
     }]);
 
-    return ContextMenuOperations;
+    return Operations;
 }();
 
-exports.default = ContextMenuOperations;
+exports.default = Operations;
 ;
 
 /***/ }),
@@ -2307,13 +2303,13 @@ var _ContextMenu = __webpack_require__(/*! ./classes/ContextMenu */ "./src/js/cl
 
 var _ContextMenu2 = _interopRequireDefault(_ContextMenu);
 
-var _ContextMenuItemTypes = __webpack_require__(/*! ./classes/ContextMenuItemTypes */ "./src/js/classes/ContextMenuItemTypes.js");
+var _ItemTypes = __webpack_require__(/*! ./classes/ItemTypes */ "./src/js/classes/ItemTypes.js");
 
-var _ContextMenuItemTypes2 = _interopRequireDefault(_ContextMenuItemTypes);
+var _ItemTypes2 = _interopRequireDefault(_ItemTypes);
 
-var _contextMenuFunction = __webpack_require__(/*! ./jquery/contextMenuFunction */ "./src/js/jquery/contextMenuFunction.js");
+var _contextMenu = __webpack_require__(/*! ./jquery/contextMenu */ "./src/js/jquery/contextMenu.js");
 
-var _contextMenuFunction2 = _interopRequireDefault(_contextMenuFunction);
+var _contextMenu2 = _interopRequireDefault(_contextMenu);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2342,10 +2338,10 @@ contextMenu.operations = manager.operations;
 contextMenu.menus = manager.menus;
 contextMenu.namespaces = manager.namespaces;
 
-$.fn.contextMenu = _contextMenuFunction2.default;
+$.fn.contextMenu = _contextMenu2.default;
 $.contextMenu = contextMenu;
 
-module.exports = { ContextMenu: _ContextMenu2.default, ContextMenuItemTypes: _ContextMenuItemTypes2.default };
+module.exports = { ContextMenu: _ContextMenu2.default, ContextMenuItemTypes: _ItemTypes2.default };
 
 /***/ }),
 
@@ -2525,10 +2521,10 @@ function positionSubmenu(e, $menu) {
 
 /***/ }),
 
-/***/ "./src/js/jquery/contextMenuFunction.js":
-/*!**********************************************!*\
-  !*** ./src/js/jquery/contextMenuFunction.js ***!
-  \**********************************************/
+/***/ "./src/js/jquery/contextMenu.js":
+/*!**************************************!*\
+  !*** ./src/js/jquery/contextMenu.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
