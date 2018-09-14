@@ -3,6 +3,7 @@ import '../sass/jquery.contextMenu.scss';
 import ContextMenu from './classes/ContextMenu';
 import ItemTypes from './classes/ItemTypes';
 import elementFunction from './jquery/contextMenu';
+import './polyfills/element-matches';
 
 /**
  * The jQuery namespace.

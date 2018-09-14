@@ -25,6 +25,23 @@ class EventListener {
     }
 
     /**
+     * Triggers an event on the instance's element.
+     *
+     * @param {Element} el Element to trigger on
+     * @param {string} eventName Name of the event to trigger.
+     * @param {Object} data Optional event data to be added to the event object.
+     * @param {boolean} bubbles
+     * @param {boolean} cancelable
+     *
+     * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
+     */
+    static triggerEvent(el, eventName, data = {}, bubbles = true, cancelable = true) {
+        const event = new CustomEvent(eventName, {detail: data, bubbles: bubbles, cancelable: cancelable});
+        el.dispatchEvent(event);
+        return !event.defaultPrevented;
+    }
+
+    /**
      * Destructor.
      *
      * Removes all event listeners and cleans up all references.
@@ -155,7 +172,6 @@ class EventListener {
      * @private
      */
     _onEvent(event) {
-
         let isPropagationStopped = false;
         let stopPropagation = event.stopPropagation;
         event.stopPropagation = function () {
@@ -163,7 +179,7 @@ class EventListener {
             isPropagationStopped = true;
         };
 
-        if (event.detail.data) {
+        if (event.detail && event.detail.data) {
             event._contextMenuData = event.detail.data;
         } else {
             event._contextMenuData = this.contextMenuData;
@@ -184,7 +200,7 @@ class EventListener {
 
                 if (selector && events.hasOwnProperty(selector) && Helper.matchesSelector(target, selector)) {
                     this.context = target;
-                    this.callAll(events[selector], event, this.context);
+                    EventListener.callAll(events[selector], event, this.context);
                 }
             }
             target = target.parentElement;
@@ -194,11 +210,11 @@ class EventListener {
         }
 
         if (isPropagationStopped === false && events.hasOwnProperty('')) {
-            this.callAll(events[''], event, this.context);
+            EventListener.callAll(events[''], event, this.context);
         }
     }
 
-    callAll(callbacks, event, context) {
+    static callAll(callbacks, event, context) {
         for (let i = 0; i < callbacks.length; i++) {
             callbacks[i].call(context, event);
         }

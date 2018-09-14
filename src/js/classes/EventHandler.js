@@ -1,4 +1,5 @@
 import defaults from '../defaults';
+import EventListener from './EventListener'
 
 /**
  * @typedef {jQuery.Event} ContextMenuEvent
@@ -135,7 +136,7 @@ export default class EventHandler {
     click(e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        e._contextMenuData.manager.triggerEvent(this, 'contextmenu', {data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e});
+        EventListener.triggerEvent(this, 'contextmenu', {data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e});
     }
 
     /**
@@ -151,7 +152,7 @@ export default class EventHandler {
 
         // hide any previous menus
         if (e._contextMenuData.manager.handler.$currentTrigger && e._contextMenuData.manager.handler.$currentTrigger.length && !e._contextMenuData.manager.handler.$currentTrigger.is($this)) {
-            e._contextMenuData.manager.triggerEvent(e._contextMenuData.manager.handler.$currentTrigger.data('contextMenu').$menu.get(0), 'contextmenu', {data: e._contextMenuData, originalEvent: e});
+            EventListener.triggerEvent(e._contextMenuData.manager.handler.$currentTrigger.data('contextMenu').$menu.get(0), 'contextmenu', {data: e._contextMenuData, originalEvent: e});
         }
 
         // activate on right click
@@ -174,7 +175,7 @@ export default class EventHandler {
             e.preventDefault();
             e.stopImmediatePropagation();
             e._contextMenuData.manager.handler.$currentTrigger = $this;
-            e._contextMenuData.manager.triggerEvent(this, 'contextmenu', {data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e});
+            EventListener.triggerEvent(this, 'contextmenu', {data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e});
         }
 
         $this.removeData('contextMenuActive');
@@ -188,7 +189,7 @@ export default class EventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     mouseenter(e) {
-        const $this = $(this);
+        // @todo const $this = $(this);
         const $related = $(e.relatedTarget);
 
         // abort if we're coming from a menu
@@ -308,12 +309,12 @@ export default class EventHandler {
                     sel.removeAllRanges();
                     sel.addRange(range);
                 }
-                root.manager.triggerEvent(target, e);
+                EventListener.triggerEvent(target, e);
                 root.$layer.show();
             }
 
             if (root.hideOnSecondTrigger && triggerAction && root.$menu !== null && typeof root.$menu !== 'undefined') {
-                root.manager.triggerEvent(root.$menu.get(0), 'contextmenu:hide', {data: root, originalEvent: e});
+                EventListener.triggerEvent(root.$menu.get(0), 'contextmenu:hide', {data: root, originalEvent: e});
                 return;
             }
 
@@ -353,7 +354,7 @@ export default class EventHandler {
             }
 
             if (root.$menu !== null && typeof root.$menu !== 'undefined') {
-                root.manager.triggerEvent(root.$menu.get(0), 'contextmenu:hide', {data: root, originalEvent: e});
+                EventListener.triggerEvent(root.$menu.get(0), 'contextmenu:hide', {data: root, originalEvent: e});
             }
         }, 50);
     }
@@ -423,7 +424,7 @@ export default class EventHandler {
                             rootMenuData.$selected.find('input, textarea, select').blur();
                         }
                         if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                            rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', {data: rootMenuData, originalEvent: e});
+                            EventListener.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', {data: rootMenuData, originalEvent: e});
                         }
                         return;
                     } else if (e.keyCode === 38 && rootMenuData.$selected.find('input, textarea, select').prop('type') === 'checkbox') {
@@ -433,7 +434,7 @@ export default class EventHandler {
                     }
                 } else if (e.keyCode !== 9 || e.shiftKey) {
                     if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                        rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', {data: rootMenuData, originalEvent: e});
+                        EventListener.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', {data: rootMenuData, originalEvent: e});
                     }
                     return;
                 }
@@ -449,7 +450,7 @@ export default class EventHandler {
                             rootMenuData.$selected.find('input, textarea, select').blur();
                         }
                         if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                            rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', {data: rootMenuData, originalEvent: e});
+                            EventListener.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', {data: rootMenuData, originalEvent: e});
                         }
                         return;
                     } else if (e.keyCode === 40 && rootMenuData.$selected.find('input, textarea, select').prop('type') === 'checkbox') {
@@ -459,7 +460,7 @@ export default class EventHandler {
                     }
                 } else {
                     if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                        rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', {data: rootMenuData, originalEvent: e});
+                        EventListener.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', {data: rootMenuData, originalEvent: e});
                     }
                     return;
                 }
@@ -473,7 +474,7 @@ export default class EventHandler {
 
                 if (!rootMenuData.$selected.parent().hasClass('context-menu-root')) {
                     const $parent = rootMenuData.$selected.parent().parent();
-                    rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', {data: rootMenuData, originalEvent: e}, false);
+                    EventListener.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', {data: rootMenuData, originalEvent: e}, true);
                     rootMenuData.$selected = $parent;
                     return;
                 }
@@ -489,7 +490,7 @@ export default class EventHandler {
                 if (itemdata.$menu && rootMenuData.$selected.hasClass('context-menu-submenu')) {
                     rootMenuData.$selected = null;
                     itemdata.$selected = null;
-                    rootMenuData.manager.triggerEvent(itemdata.$menu.get(0), 'nextcommand', {data: itemdata, originalEvent: e});
+                    EventListener.triggerEvent(itemdata.$menu.get(0), 'nextcommand', {data: itemdata, originalEvent: e});
                     return;
                 }
                 break;
@@ -516,7 +517,7 @@ export default class EventHandler {
                     break;
                 }
                 if (typeof rootMenuData.$selected !== 'undefined' && rootMenuData.$selected !== null) {
-                    rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'mouseup', {data: rootMenuData, originalEvent: e});
+                    EventListener.triggerEvent(rootMenuData.$selected.get(0), 'mouseup', {data: rootMenuData, originalEvent: e});
                 }
                 return;
             case 32: // space
@@ -529,7 +530,7 @@ export default class EventHandler {
             case 27: // esc
                 e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
                 if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                    rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide', {data: rootMenuData, originalEvent: e});
+                    EventListener.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide', {data: rootMenuData, originalEvent: e});
                 }
                 return;
 
@@ -637,7 +638,7 @@ export default class EventHandler {
             }
             if ($next.is($round)) {
                 // break endless loop
-                return;
+                break;
             }
         }
 
@@ -737,7 +738,7 @@ export default class EventHandler {
         }
 
         // make sure only one item is selected
-        let targetMenu = (currentMenuData.$menu ? currentMenuData : rootMenuData);
+        // @todo let targetMenu = (currentMenuData.$menu ? currentMenuData : rootMenuData);
 
         if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
             currentMenuData.$selected = null;
@@ -745,7 +746,7 @@ export default class EventHandler {
         }
 
         e.stopPropagation();
-        rootMenuData.manager.triggerEvent(this, 'contextmenu:focus', {data: currentMenuData, originalEvent: e}, false);
+        EventListener.triggerEvent(this, 'contextmenu:focus', {data: currentMenuData, originalEvent: e}, false);
     }
 
     /**
@@ -770,12 +771,14 @@ export default class EventHandler {
             e.preventDefault();
             e.stopImmediatePropagation();
             rootMenuData.$selected = currentMenuData.$selected = currentMenuData.$node;
-            return;
+            // todo unneeded?
+            // return;
         }
 
-        if (currentMenuData && currentMenuData.$menu && currentMenuData.$menu.hasClass(rootMenuData.classNames.visible)) {
-            return;
-        }
+        // @todo unneeded?
+        // if (currentMenuData && currentMenuData.$menu && currentMenuData.$menu.hasClass(rootMenuData.classNames.visible)) {
+        //     return;
+        // }
     }
 
     /**
@@ -814,7 +817,7 @@ export default class EventHandler {
 
         // hide menu if callback doesn't stop that
         if (callback.call(rootMenuData.$trigger, e, key, currentMenuData, rootMenuData) !== false) {
-            rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide');
+            EventListener.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide');
         } else if (rootMenuData.$menu.parent().length) {
             rootMenuData.manager.operations.update.call(rootMenuData.$trigger, e, rootMenuData);
         }
@@ -852,7 +855,7 @@ export default class EventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     focusItem(e) {
-        e.stopPropagation();
+        // e.stopPropagation();
 
         const $this = $(this);
         const data = $this.data();
@@ -863,19 +866,21 @@ export default class EventHandler {
             return;
         }
 
-        let $element = $this
+        let $elements = $this
             .addClass([rootMenuData.classNames.hover, rootMenuData.classNames.visible].join(' '))
             // select other items and included items
             .parent()
-            .find('.context-menu-item')
+            .find('> .context-menu-item')
             .not($this)
             .removeClass(rootMenuData.classNames.visible)
             .filter('.' + rootMenuData.classNames.hover);
 
-        if ($element.length > 0) {
+        if ($elements.length > 0) {
             // Blur other elements in this menu
-            $element.each(function (i, e) {
-                rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', {data: currentMenuData}, false);
+            $elements.each(function (i, element) {
+                if (!element.isEqualNode(e.target)) {
+                    EventListener.triggerEvent(element, 'contextmenu:blur', {data: currentMenuData}, true);
+                }
             });
         }
 
@@ -884,11 +889,15 @@ export default class EventHandler {
 
         if (currentMenuData.$node && currentMenuData.$node.hasClass('context-menu-submenu')) {
             currentMenuData.$node.addClass(rootMenuData.classNames.hover);
+            currentMenuData.$node.addClass(rootMenuData.classNames.visible);
         }
 
         // position sub-menu - do after show so dumb $.ui.position can keep up
         if (currentMenuData.$node) {
-            rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
+            if (currentMenuData.$node.get(0).isEqualNode(e.target)) {
+                // currentMenuData.$node.addClass([rootMenuData.classNames.hover, rootMenuData.classNames.visible].join(' '));
+                rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
+            }
         }
     }
 
@@ -900,7 +909,7 @@ export default class EventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     blurItem(e) {
-        e.stopPropagation();
+        // e.stopPropagation();
         const $this = $(this);
         const data = $this.data();
 

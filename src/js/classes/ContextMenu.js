@@ -3,7 +3,7 @@ import defaults from '../defaults';
 import Html5Builder from './Html5Builder';
 import EventHandler from './EventHandler';
 import EventListener from './EventListener';
-import Helper from "./Helper";
+import Helper from './Helper';
 
 export default class ContextMenu {
     /**
@@ -128,15 +128,12 @@ export default class ContextMenu {
                     return true;
                 }
 
-
                 $visibleMenu = $('.context-menu-list').filter(':visible');
                 if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is($(o.context).find(o.selector))) {
-                    this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', {force: true});
+                    EventListener.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', {force: true});
                 }
 
-
                 this.removeListeners(o.ns);
-
 
                 if (this.menus[o.ns].$menu) {
                     this.menus[o.ns].$menu.remove();
@@ -159,12 +156,21 @@ export default class ContextMenu {
             this.counter = 0;
             this.initialized = false;
 
-            $('#context-menu-layer, .context-menu-list').remove();
-        } else if (this.namespaces[options.selector]) {
-            $visibleMenu = $('.context-menu-list').filter(':visible');
-            if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is(options.selector)) {
-                this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', {force: true});
+            let layer = document.getElementById('context-menu-layer');
+            if (layer) {
+                layer.parentNode.removeChild(layer);
             }
+
+            let contextMenus = document.querySelectorAll('.context-menu-list');
+            contextMenus.forEach(function (e) {
+                e.parentNode.removeChild(e);
+            });
+        } else if (this.namespaces[options.selector]) {
+            let visibleMenus = this.getVisibleMenus();
+            visibleMenus.forEach(function (e) {
+                // todo Should we check for correct menu? $visibleMenu.data().contextMenuRoot.$trigger.is(options.selector)
+                EventListener.triggerEvent(e, 'contextmenu:hide', {force: true});
+            });
 
             let namespace = this.namespaces[options.selector];
 
@@ -437,7 +443,7 @@ export default class ContextMenu {
      *
      * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
      */
-    triggerEvent(el, eventName, data = {}, bubbles = true, cancelable = true) {
+    static triggerEvent(el, eventName, data = {}, bubbles = true, cancelable = true) {
         const event = new CustomEvent(eventName, {detail: data, bubbles: bubbles, cancelable: cancelable});
         el.dispatchEvent(event);
         return !event.defaultPrevented;
@@ -445,7 +451,7 @@ export default class ContextMenu {
 
     getVisibleMenus() {
         return Array.prototype.filter.call(document.querySelectorAll('.context-menu-list'), (element) => {
-           return Helper.isVisible(element)
+            return Helper.isVisible(element)
         });
     }
 
@@ -454,9 +460,9 @@ export default class ContextMenu {
      *
      * @param {string?} namespace Namespace of the contextmenu to destroy, no value means all
      */
-    removeListeners(namespace){
+    removeListeners(namespace) {
         let namespaces = [namespace];
-        if(!namespace) {
+        if (!namespace) {
             namespaces = Object.values(this.namespaces);
         }
 
@@ -469,5 +475,7 @@ export default class ContextMenu {
         });
     }
 
-
+    getMenuBySelector(selector){
+        return Object.values(this.menus).find((menu) => menu.selector === selector);
+    }
 }

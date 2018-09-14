@@ -218,7 +218,7 @@ var ContextMenu = function () {
 
                     $visibleMenu = $('.context-menu-list').filter(':visible');
                     if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is($(o.context).find(o.selector))) {
-                        _this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', { force: true });
+                        _EventListener2.default.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', { force: true });
                     }
 
                     _this.removeListeners(o.ns);
@@ -239,12 +239,20 @@ var ContextMenu = function () {
                 this.counter = 0;
                 this.initialized = false;
 
-                $('#context-menu-layer, .context-menu-list').remove();
-            } else if (this.namespaces[options.selector]) {
-                $visibleMenu = $('.context-menu-list').filter(':visible');
-                if ($visibleMenu.length && $visibleMenu.data().contextMenuRoot.$trigger.is(options.selector)) {
-                    this.triggerEvent($visibleMenu.get(0), 'contextmenu:hide', { force: true });
+                var layer = document.getElementById('context-menu-layer');
+                if (layer) {
+                    layer.parentNode.removeChild(layer);
                 }
+
+                var contextMenus = document.querySelectorAll('.context-menu-list');
+                contextMenus.forEach(function (e) {
+                    e.parentNode.removeChild(e);
+                });
+            } else if (this.namespaces[options.selector]) {
+                var visibleMenus = this.getVisibleMenus();
+                visibleMenus.forEach(function (e) {
+                    _EventListener2.default.triggerEvent(e, 'contextmenu:hide', { force: true });
+                });
 
                 var namespace = this.namespaces[options.selector];
 
@@ -432,17 +440,6 @@ var ContextMenu = function () {
             return data;
         }
     }, {
-        key: 'triggerEvent',
-        value: function triggerEvent(el, eventName) {
-            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-            var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
-            var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
-
-            var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
-            el.dispatchEvent(event);
-            return !event.defaultPrevented;
-        }
-    }, {
         key: 'getVisibleMenus',
         value: function getVisibleMenus() {
             return Array.prototype.filter.call(document.querySelectorAll('.context-menu-list'), function (element) {
@@ -466,6 +463,24 @@ var ContextMenu = function () {
                     });
                 }
             });
+        }
+    }, {
+        key: 'getMenuBySelector',
+        value: function getMenuBySelector(selector) {
+            return Object.values(this.menus).find(function (menu) {
+                return menu.selector === selector;
+            });
+        }
+    }], [{
+        key: 'triggerEvent',
+        value: function triggerEvent(el, eventName) {
+            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+            var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+            var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+
+            var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
+            el.dispatchEvent(event);
+            return !event.defaultPrevented;
         }
     }]);
 
@@ -495,6 +510,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _defaults = __webpack_require__(/*! ../defaults */ "./src/js/defaults/index.js");
 
 var _defaults2 = _interopRequireDefault(_defaults);
+
+var _EventListener = __webpack_require__(/*! ./EventListener */ "./src/js/classes/EventListener.js");
+
+var _EventListener2 = _interopRequireDefault(_EventListener);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -592,7 +611,7 @@ var EventHandler = function () {
         value: function click(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            e._contextMenuData.manager.triggerEvent(this, 'contextmenu', { data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e });
+            _EventListener2.default.triggerEvent(this, 'contextmenu', { data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e });
         }
     }, {
         key: 'mousedown',
@@ -600,7 +619,7 @@ var EventHandler = function () {
             var $this = $(this);
 
             if (e._contextMenuData.manager.handler.$currentTrigger && e._contextMenuData.manager.handler.$currentTrigger.length && !e._contextMenuData.manager.handler.$currentTrigger.is($this)) {
-                e._contextMenuData.manager.triggerEvent(e._contextMenuData.manager.handler.$currentTrigger.data('contextMenu').$menu.get(0), 'contextmenu', { data: e._contextMenuData, originalEvent: e });
+                _EventListener2.default.triggerEvent(e._contextMenuData.manager.handler.$currentTrigger.data('contextMenu').$menu.get(0), 'contextmenu', { data: e._contextMenuData, originalEvent: e });
             }
 
             if (e.button === 2) {
@@ -615,7 +634,7 @@ var EventHandler = function () {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 e._contextMenuData.manager.handler.$currentTrigger = $this;
-                e._contextMenuData.manager.triggerEvent(this, 'contextmenu', { data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e });
+                _EventListener2.default.triggerEvent(this, 'contextmenu', { data: e._contextMenuData, pageX: e.pageX, pageY: e.pageY, originalEvent: e });
             }
 
             $this.removeData('contextMenuActive');
@@ -623,7 +642,6 @@ var EventHandler = function () {
     }, {
         key: 'mouseenter',
         value: function mouseenter(e) {
-            var $this = $(this);
             var $related = $(e.relatedTarget);
 
             if ($related.is('.context-menu-list') || $related.closest('.context-menu-list').length) {
@@ -699,12 +717,12 @@ var EventHandler = function () {
                         sel.removeAllRanges();
                         sel.addRange(range);
                     }
-                    root.manager.triggerEvent(target, e);
+                    _EventListener2.default.triggerEvent(target, e);
                     root.$layer.show();
                 }
 
                 if (root.hideOnSecondTrigger && triggerAction && root.$menu !== null && typeof root.$menu !== 'undefined') {
-                    root.manager.triggerEvent(root.$menu.get(0), 'contextmenu:hide', { data: root, originalEvent: e });
+                    _EventListener2.default.triggerEvent(root.$menu.get(0), 'contextmenu:hide', { data: root, originalEvent: e });
                     return;
                 }
 
@@ -742,7 +760,7 @@ var EventHandler = function () {
                 }
 
                 if (root.$menu !== null && typeof root.$menu !== 'undefined') {
-                    root.manager.triggerEvent(root.$menu.get(0), 'contextmenu:hide', { data: root, originalEvent: e });
+                    _EventListener2.default.triggerEvent(root.$menu.get(0), 'contextmenu:hide', { data: root, originalEvent: e });
                 }
             }, 50);
         }
@@ -795,7 +813,7 @@ var EventHandler = function () {
                                 rootMenuData.$selected.find('input, textarea, select').blur();
                             }
                             if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                                rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', { data: rootMenuData, originalEvent: e });
+                                _EventListener2.default.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', { data: rootMenuData, originalEvent: e });
                             }
                             return;
                         } else if (e.keyCode === 38 && rootMenuData.$selected.find('input, textarea, select').prop('type') === 'checkbox') {
@@ -804,7 +822,7 @@ var EventHandler = function () {
                         }
                     } else if (e.keyCode !== 9 || e.shiftKey) {
                         if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                            rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', { data: rootMenuData, originalEvent: e });
+                            _EventListener2.default.triggerEvent(rootMenuData.$menu.get(0), 'prevcommand', { data: rootMenuData, originalEvent: e });
                         }
                         return;
                     }
@@ -819,7 +837,7 @@ var EventHandler = function () {
                                 rootMenuData.$selected.find('input, textarea, select').blur();
                             }
                             if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                                rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', { data: rootMenuData, originalEvent: e });
+                                _EventListener2.default.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', { data: rootMenuData, originalEvent: e });
                             }
                             return;
                         } else if (e.keyCode === 40 && rootMenuData.$selected.find('input, textarea, select').prop('type') === 'checkbox') {
@@ -828,7 +846,7 @@ var EventHandler = function () {
                         }
                     } else {
                         if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                            rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', { data: rootMenuData, originalEvent: e });
+                            _EventListener2.default.triggerEvent(rootMenuData.$menu.get(0), 'nextcommand', { data: rootMenuData, originalEvent: e });
                         }
                         return;
                     }
@@ -842,7 +860,7 @@ var EventHandler = function () {
 
                     if (!rootMenuData.$selected.parent().hasClass('context-menu-root')) {
                         var $parent = rootMenuData.$selected.parent().parent();
-                        rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', { data: rootMenuData, originalEvent: e }, false);
+                        _EventListener2.default.triggerEvent(rootMenuData.$selected.get(0), 'contextmenu:blur', { data: rootMenuData, originalEvent: e }, true);
                         rootMenuData.$selected = $parent;
                         return;
                     }
@@ -858,7 +876,7 @@ var EventHandler = function () {
                     if (itemdata.$menu && rootMenuData.$selected.hasClass('context-menu-submenu')) {
                         rootMenuData.$selected = null;
                         itemdata.$selected = null;
-                        rootMenuData.manager.triggerEvent(itemdata.$menu.get(0), 'nextcommand', { data: itemdata, originalEvent: e });
+                        _EventListener2.default.triggerEvent(itemdata.$menu.get(0), 'nextcommand', { data: itemdata, originalEvent: e });
                         return;
                     }
                     break;
@@ -883,7 +901,7 @@ var EventHandler = function () {
                         break;
                     }
                     if (typeof rootMenuData.$selected !== 'undefined' && rootMenuData.$selected !== null) {
-                        rootMenuData.manager.triggerEvent(rootMenuData.$selected.get(0), 'mouseup', { data: rootMenuData, originalEvent: e });
+                        _EventListener2.default.triggerEvent(rootMenuData.$selected.get(0), 'mouseup', { data: rootMenuData, originalEvent: e });
                     }
                     return;
                 case 32:
@@ -895,7 +913,7 @@ var EventHandler = function () {
                 case 27:
                     e._contextMenuData.manager.handler.keyStop(e, rootMenuData);
                     if (rootMenuData.$menu !== null && typeof rootMenuData.$menu !== 'undefined') {
-                        rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide', { data: rootMenuData, originalEvent: e });
+                        _EventListener2.default.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide', { data: rootMenuData, originalEvent: e });
                     }
                     return;
 
@@ -980,7 +998,7 @@ var EventHandler = function () {
                     $next = $children.first();
                 }
                 if ($next.is($round)) {
-                    return;
+                    break;
                 }
             }
 
@@ -1045,15 +1063,13 @@ var EventHandler = function () {
                 e.stopImmediatePropagation();
             }
 
-            var targetMenu = currentMenuData.$menu ? currentMenuData : rootMenuData;
-
             if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
                 currentMenuData.$selected = null;
                 return;
             }
 
             e.stopPropagation();
-            rootMenuData.manager.triggerEvent(this, 'contextmenu:focus', { data: currentMenuData, originalEvent: e }, false);
+            _EventListener2.default.triggerEvent(this, 'contextmenu:focus', { data: currentMenuData, originalEvent: e }, false);
         }
     }, {
         key: 'itemMouseleave',
@@ -1070,11 +1086,6 @@ var EventHandler = function () {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 rootMenuData.$selected = currentMenuData.$selected = currentMenuData.$node;
-                return;
-            }
-
-            if (currentMenuData && currentMenuData.$menu && currentMenuData.$menu.hasClass(rootMenuData.classNames.visible)) {
-                return;
             }
         }
     }, {
@@ -1103,7 +1114,7 @@ var EventHandler = function () {
             }
 
             if (callback.call(rootMenuData.$trigger, e, key, currentMenuData, rootMenuData) !== false) {
-                rootMenuData.manager.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide');
+                _EventListener2.default.triggerEvent(rootMenuData.$menu.get(0), 'contextmenu:hide');
             } else if (rootMenuData.$menu.parent().length) {
                 rootMenuData.manager.operations.update.call(rootMenuData.$trigger, e, rootMenuData);
             }
@@ -1122,7 +1133,6 @@ var EventHandler = function () {
     }, {
         key: 'focusItem',
         value: function focusItem(e) {
-            e.stopPropagation();
 
             var $this = $(this);
             var data = $this.data();
@@ -1133,11 +1143,13 @@ var EventHandler = function () {
                 return;
             }
 
-            var $element = $this.addClass([rootMenuData.classNames.hover, rootMenuData.classNames.visible].join(' ')).parent().find('.context-menu-item').not($this).removeClass(rootMenuData.classNames.visible).filter('.' + rootMenuData.classNames.hover);
+            var $elements = $this.addClass([rootMenuData.classNames.hover, rootMenuData.classNames.visible].join(' ')).parent().find('> .context-menu-item').not($this).removeClass(rootMenuData.classNames.visible).filter('.' + rootMenuData.classNames.hover);
 
-            if ($element.length > 0) {
-                $element.each(function (i, e) {
-                    rootMenuData.manager.triggerEvent(e, 'contextmenu:blur', { data: currentMenuData }, false);
+            if ($elements.length > 0) {
+                $elements.each(function (i, element) {
+                    if (!element.isEqualNode(e.target)) {
+                        _EventListener2.default.triggerEvent(element, 'contextmenu:blur', { data: currentMenuData }, true);
+                    }
                 });
             }
 
@@ -1145,16 +1157,18 @@ var EventHandler = function () {
 
             if (currentMenuData.$node && currentMenuData.$node.hasClass('context-menu-submenu')) {
                 currentMenuData.$node.addClass(rootMenuData.classNames.hover);
+                currentMenuData.$node.addClass(rootMenuData.classNames.visible);
             }
 
             if (currentMenuData.$node) {
-                rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
+                if (currentMenuData.$node.get(0).isEqualNode(e.target)) {
+                    rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
+                }
             }
         }
     }, {
         key: 'blurItem',
         value: function blurItem(e) {
-            e.stopPropagation();
             var $this = $(this);
             var data = $this.data();
 
@@ -1312,7 +1326,6 @@ var EventListener = function () {
     }, {
         key: '_onEvent',
         value: function _onEvent(event) {
-
             var isPropagationStopped = false;
             var stopPropagation = event.stopPropagation;
             event.stopPropagation = function () {
@@ -1320,7 +1333,7 @@ var EventListener = function () {
                 isPropagationStopped = true;
             };
 
-            if (event.detail.data) {
+            if (event.detail && event.detail.data) {
                 event._contextMenuData = event.detail.data;
             } else {
                 event._contextMenuData = this.contextMenuData;
@@ -1339,7 +1352,7 @@ var EventListener = function () {
 
                     if (selector && events.hasOwnProperty(selector) && _Helper2.default.matchesSelector(target, selector)) {
                         this.context = target;
-                        this.callAll(events[selector], event, this.context);
+                        EventListener.callAll(events[selector], event, this.context);
                     }
                 }
                 target = target.parentElement;
@@ -1349,8 +1362,19 @@ var EventListener = function () {
             }
 
             if (isPropagationStopped === false && events.hasOwnProperty('')) {
-                this.callAll(events[''], event, this.context);
+                EventListener.callAll(events[''], event, this.context);
             }
+        }
+    }], [{
+        key: 'triggerEvent',
+        value: function triggerEvent(el, eventName) {
+            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+            var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+            var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+
+            var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
+            el.dispatchEvent(event);
+            return !event.defaultPrevented;
         }
     }, {
         key: 'callAll',
@@ -1736,7 +1760,7 @@ var Operations = function () {
 
             var layer = document.getElementById('#context-menu-layer');
             if (layer) {
-                menuData.manager.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
+                _EventListener2.default.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
             }
 
             menuData.$trigger = $trigger;
@@ -1769,7 +1793,7 @@ var Operations = function () {
             menuData.$menu.find('ul').css('zIndex', css.zIndex + 1);
 
             menuData.$menu.css(css)[menuData.animation.show](menuData.animation.duration, function () {
-                menuData.manager.triggerEvent($trigger.get(0), 'contextmenu:visible');
+                _EventListener2.default.triggerEvent($trigger.get(0), 'contextmenu:visible');
 
                 menuData.manager.operations.activated(e, menuData);
                 menuData.events.activated($trigger, e, menuData);
@@ -1788,7 +1812,7 @@ var Operations = function () {
                     if (menuData.$layer && !menuData.hovering && (!(e.pageX >= pos.left && e.pageX <= pos.right) || !(e.pageY >= pos.top && e.pageY <= pos.bottom))) {
                         setTimeout(function () {
                             if (!menuData.hovering && menuData.$menu !== null && typeof menuData.$menu !== 'undefined') {
-                                menuData.manager.triggerEvent(menuData.$menu.get(0), 'contextmenu:hide');
+                                _EventListener2.default.triggerEvent(menuData.$menu.get(0), 'contextmenu:hide');
                             }
                         }, 50);
                     }
@@ -1839,8 +1863,6 @@ var Operations = function () {
 
             if (menuData.$menu) {
                 menuData.$menu[menuData.animation.hide](menuData.animation.duration, function () {
-                    var manager = menuData.manager;
-
                     if (menuData.build) {
                         menuData.$menu.remove();
                         Object.keys(menuData).forEach(function (key) {
@@ -1861,7 +1883,7 @@ var Operations = function () {
                     }
 
                     setTimeout(function () {
-                        manager.triggerEvent($trigger.get(0), 'contextmenu:hidden');
+                        _EventListener2.default.triggerEvent($trigger.get(0), 'contextmenu:hidden');
                     }, 10);
                 });
             }
@@ -2311,6 +2333,8 @@ var _contextMenu = __webpack_require__(/*! ./jquery/contextMenu */ "./src/js/jqu
 
 var _contextMenu2 = _interopRequireDefault(_contextMenu);
 
+__webpack_require__(/*! ./polyfills/element-matches */ "./src/js/polyfills/element-matches.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var manager = new _ContextMenu2.default();
@@ -2540,17 +2564,17 @@ exports.default = function (operation) {
     var $o = operation;
     if ($t.length > 0) {
         if (typeof operation === 'undefined') {
-            $t.first().trigger('contextmenu');
+            _EventListener2.default.triggerEvent($t.get(0), 'contextmenu');
         } else if (typeof operation.x !== 'undefined' && typeof operation.y !== 'undefined') {
-            $t.first().trigger($.Event('contextmenu', {
+            _EventListener2.default.triggerEvent($t.get(0), 'contextmenu', {
                 pageX: operation.x,
                 pageY: operation.y,
                 mouseButton: operation.button
-            }));
+            });
         } else if (operation === 'hide') {
             var $menu = this.first().data('contextMenu') ? this.first().data('contextMenu').$menu : null;
             if ($menu) {
-                $menu.trigger('contextmenu:hide');
+                _EventListener2.default.triggerEvent($menu.get(0), 'contextmenu:hide');
             }
         } else if (operation === 'destroy') {
             $.contextMenu('destroy', { context: this });
@@ -2578,6 +2602,28 @@ exports.default = function (operation) {
 
     return this;
 };
+
+var _EventListener = __webpack_require__(/*! ../classes/EventListener */ "./src/js/classes/EventListener.js");
+
+var _EventListener2 = _interopRequireDefault(_EventListener);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/***/ }),
+
+/***/ "./src/js/polyfills/element-matches.js":
+/*!*********************************************!*\
+  !*** ./src/js/polyfills/element-matches.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+if (!Element.prototype.matches) {
+    Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+}
 
 /***/ }),
 

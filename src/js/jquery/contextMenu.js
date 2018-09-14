@@ -1,3 +1,5 @@
+import EventListener from '../classes/EventListener';
+
 /**
  * The jQuery plugin namespace.
  * @external "jQuery.fn"
@@ -18,17 +20,21 @@ export default function (operation) {
     const $o = operation;
     if ($t.length > 0) { // this is not a build on demand menu
         if (typeof operation === 'undefined') {
-            $t.first().trigger('contextmenu');
+            // @todo change the way this is handled
+            // $t.first().trigger('contextmenu');
+            EventListener.triggerEvent($t.get(0), 'contextmenu');
         } else if (typeof operation.x !== 'undefined' && typeof operation.y !== 'undefined') {
-            $t.first().trigger($.Event('contextmenu', {
+            EventListener.triggerEvent($t.get(0), 'contextmenu', {
                 pageX: operation.x,
                 pageY: operation.y,
                 mouseButton: operation.button
-            }));
+            });
         } else if (operation === 'hide') {
             const $menu = this.first().data('contextMenu') ? this.first().data('contextMenu').$menu : null;
             if ($menu) {
-                $menu.trigger('contextmenu:hide');
+                EventListener.triggerEvent($menu.get(0), 'contextmenu:hide');
+                // @todo handle this better?
+                // $menu.trigger('contextmenu:hide');
             }
         } else if (operation === 'destroy') {
             $.contextMenu('destroy', {context: this});

@@ -77,8 +77,10 @@ function testQUnit(name, itemClickEvent, triggerEvent) {
         $('.context-menu').contextMenu();
 
         const contextmenuData = helper.getContextMenuDataFromShow();
-        contextmenuData.$menu.trigger('nextcommand');
-        contextmenuData.$selected.trigger(triggerEvent);
+        TestHelper.triggerEvent(contextmenuData.$menu.get(0), 'nextcommand');
+
+        console.log(contextmenuData.$selected);
+        TestHelper.triggerEvent(contextmenuData.$selected.get(0), triggerEvent);
 
         assert.equal(helper.spies.callback.callCount, 1, 'selected menu item was clicked once');
     });
@@ -144,9 +146,21 @@ function testQUnit(name, itemClickEvent, triggerEvent) {
     });
 
     QUnit.test('do not open context menu with no visible items', function (assert) {
-        const menu = createMenu({
-            copy: {name: 'Copy', icon: 'copy', visible: function () { return false; }},
-            paste: {name: 'Paste', icon: 'paste', visible: function () { return false; }}
+        createMenu({
+            copy: {
+                name: 'Copy',
+                icon: 'copy',
+                visible: function () {
+                    return false;
+                }
+            },
+            paste: {
+                name: 'Paste',
+                icon: 'paste',
+                visible: function () {
+                    return false;
+                }
+            }
         });
         $('.context-menu').contextMenu();
         assert.equal($('.context-menu-item').is(':visible'), false, 'no menu items visible');
@@ -186,7 +200,9 @@ function testQUnit(name, itemClickEvent, triggerEvent) {
             };
 
             // open the contextMenu asynchronously
-            setTimeout(function () { $this.contextMenu(position); }, 5);
+            setTimeout(function () {
+                $this.contextMenu(position);
+            }, 5);
         });
 
         // setup context menu
@@ -256,14 +272,16 @@ function testQUnit(name, itemClickEvent, triggerEvent) {
         let menu = createMenu(items);
         $('.context-menu').contextMenu();
         const contextmenuData = menu.getContextMenuDataFromShow();
-        contextmenuData.$menu.trigger('nextcommand');
-        contextmenuData.$menu.trigger('nextcommand');
-        contextmenuData.$menu.trigger('nextcommand');
-        contextmenuData.$menu.trigger('nextcommand');
 
-        $('.context-menu-item').first().trigger(triggerEvent);
+
+        TestHelper.triggerEvent(contextmenuData.$menu.get(0), 'nextcommand');
+        TestHelper.triggerEvent(contextmenuData.$menu.get(0), 'nextcommand');
+        TestHelper.triggerEvent(contextmenuData.$menu.get(0), 'nextcommand');
+        TestHelper.triggerEvent(contextmenuData.$menu.get(0), 'nextcommand');
+
+        TestHelper.triggerEvent($('.context-menu-item').first().get(0), triggerEvent);
         $('.context-menu-submenu .context-menu-item').each(function (i, e) {
-            $(e).trigger(triggerEvent)
+            TestHelper.triggerEvent(e, triggerEvent);
         });
 
         assert.equal(firstCallback.callCount, 1);
@@ -317,12 +335,18 @@ function testQUnit(name, itemClickEvent, triggerEvent) {
     QUnit.test('contextmenu visible function is called once', function (assert) {
         console.log('contextmenu visible function is called once started')
         let visibleCount = 0;
-        let helper = createMenu({test: {name: 'my item',
-            visible: function () {
-                visibleCount++;
-                return true;
-            }}});
-        console.log('contextmenu created, opening');
+        let helper = createMenu({
+            test: {
+                name: 'my item',
+                visible: function () {
+                    visibleCount++;
+                    return true;
+                }
+            }
+        });
+        console.log('contextmenu created');
+        assert.equal(visibleCount, 0);
+        console.log('opening');
         helper.$contextmenu.contextMenu();
         console.log('contextmenu visible function is called once ended');
         assert.equal(visibleCount, 1);

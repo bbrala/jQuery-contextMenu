@@ -28,6 +28,23 @@ export default class TestHelper {
     }
 
     /**
+     * Triggers an event on the instance's element.
+     *
+     * @param {Element} el Element to trigger on
+     * @param {string} eventName Name of the event to trigger.
+     * @param {Object} data Optional event data to be added to the event object.
+     * @param {boolean} bubbles
+     * @param {boolean} cancelable
+     *
+     * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
+     */
+    static triggerEvent(el, eventName, data = {}, bubbles = true, cancelable = true) {
+        const event = new CustomEvent(eventName, {detail: data, bubbles: bubbles, cancelable: cancelable});
+        el.dispatchEvent(event);
+        return !event.defaultPrevented;
+    }
+
+    /**
      * @returns {ContextMenuData}
      */
     getContextMenuDataFromShow() {

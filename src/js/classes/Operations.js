@@ -30,7 +30,7 @@ export default class Operations {
         // hide any open menus
         let layer = document.getElementById('#context-menu-layer');
         if (layer) {
-            menuData.manager.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
+            EventListener.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
         }
 
         // backreference for callbacks
@@ -70,7 +70,7 @@ export default class Operations {
 
         // position and show context menu
         menuData.$menu.css(css)[menuData.animation.show](menuData.animation.duration, () => {
-            menuData.manager.triggerEvent($trigger.get(0), 'contextmenu:visible');
+            EventListener.triggerEvent($trigger.get(0), 'contextmenu:visible');
 
             menuData.manager.operations.activated(e, menuData);
             menuData.events.activated($trigger, e, menuData);
@@ -97,7 +97,7 @@ export default class Operations {
                     /* Additional hover check after short time, you might just miss the edge of the menu */
                     setTimeout(() => {
                         if (!menuData.hovering && menuData.$menu !== null && typeof menuData.$menu !== 'undefined') {
-                            menuData.manager.triggerEvent(menuData.$menu.get(0), 'contextmenu:hide');
+                            EventListener.triggerEvent(menuData.$menu.get(0), 'contextmenu:hide');
                         }
                     }, 50);
                 }
@@ -158,7 +158,7 @@ export default class Operations {
         // collapse all submenus
         menuData.$menu.find('.' + menuData.classNames.visible).removeClass(menuData.classNames.visible);
         // unregister key and mouse handlers
-        if(menuData.listeners.contextMenuAutoHide){
+        if (menuData.listeners.contextMenuAutoHide) {
             menuData.listeners.contextMenuAutoHide.destruct();
         }
         menuData.listeners.document.off('keydown');
@@ -166,7 +166,6 @@ export default class Operations {
         // hide menu
         if (menuData.$menu) {
             menuData.$menu[menuData.animation.hide](menuData.animation.duration, function () {
-                let manager = menuData.manager;
                 // tear down dynamically built menu after animation is completed.
                 if (menuData.build) {
                     menuData.$menu.remove();
@@ -188,7 +187,7 @@ export default class Operations {
                 }
 
                 setTimeout(function () {
-                    manager.triggerEvent($trigger.get(0), 'contextmenu:hidden');
+                    EventListener.triggerEvent($trigger.get(0), 'contextmenu:hidden');
                 }, 10);
             });
         }

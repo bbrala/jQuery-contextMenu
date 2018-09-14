@@ -3,13 +3,12 @@
  * @classdesc Few helper static functions
  */
 export default class Helper {
-
     /**
      * @param elem
      * @returns {boolean}
      */
     static isVisible(elem) {
-        return !!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length );
+        return !!(elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length);
     }
 
     /**
