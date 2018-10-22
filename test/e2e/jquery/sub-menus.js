@@ -3,7 +3,7 @@ module.exports = {
 
     'The submenu opens no jquery': function (browser) {
         browser
-            .url(browser.globals.test_settings.launch_url + 'sub-menus-nojquery.html')
+            .url(browser.globals.test_settings.launch_url + 'test-pages/sub-menus-nojquery.html')
             .waitForElementPresent('.context-menu-one', 5000)
             .moveToElement('.context-menu-one', 5, 5)
 
@@ -16,6 +16,7 @@ module.exports = {
             .assert.attributeContains('.item-command-charlie', 'class', 'context-menu-hover')
             .end();
     },
+
     afterEach: function (browser, done) {
         browser
             .sauceEnd()

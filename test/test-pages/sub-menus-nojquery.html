@@ -2,11 +2,11 @@
 <html>
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="../dist/contextmenu.js"
+    <script src="../../dist/contextmenu.js"
             type="text/javascript"></script>
     <script src="..//dist/jquery.ui.position.min.js"
             type="text/javascript"></script>
-    <link href="../dist/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
+    <link href="../../dist/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 <p><button class="context-menu-one btn btn-neutral">right click me</button></p>
@@ -15,9 +15,9 @@ $(function(){
     var contextMenu = new ContextMenu.ContextMenu();
     let options = {
         selector: '.context-menu-one',
-        callback: function(e, key, currentMenuData, rootMenuData) {
+        callback: function (e, key, currentMenuData, rootMenuData) {
             var m = "clicked: " + key;
-            window.console && console.log(m) || alert(m);
+            document.getElementById('messages').innerHTML += m + "\n";
         },
         items: {
             "edit": {"name": "Edit", "icon": "edit"},

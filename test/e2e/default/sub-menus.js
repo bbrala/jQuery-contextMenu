@@ -3,7 +3,7 @@ module.exports = {
 
     'The submenu opens': function (browser) {
         browser
-            .url(browser.globals.test_settings.launch_url + 'sub-menus.html')
+            .url(browser.globals.test_settings.launch_url + 'test-pages/sub-menus.html')
             .waitForElementPresent('.context-menu-one', 5000)
             .moveToElement('.context-menu-one', 5, 5)
 
