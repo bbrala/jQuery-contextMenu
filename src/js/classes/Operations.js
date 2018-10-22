@@ -396,7 +396,7 @@ export default class Operations {
 
                     case ItemTypes.submenu:
                         createNameNode(item).appendTo($t);
-                        $t.addClass('item-' + item.name);
+                        $t.addClass('item-submenu-' + item.name.replace(/\s+/g, '-').toLowerCase());
                         item.appendTo = item.$node;
                         $t.data('contextMenu', item).addClass('context-menu-submenu');
 
@@ -428,6 +428,7 @@ export default class Operations {
                             }
                         });
                         createNameNode(item).appendTo($t);
+                        $t.addClass('item-command-' + item.name.replace(/\s+/g, '-').toLowerCase());
                         break;
                 }
 

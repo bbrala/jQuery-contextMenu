@@ -82,387 +82,333 @@ var ContextMenu =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 12);
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/js/jquery.contextmenu.js");
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+/******/ ({
+
+/***/ "./node_modules/classlist-polyfill/src/index.js":
+/*!******************************************************!*\
+  !*** ./node_modules/classlist-polyfill/src/index.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/*
+ * classList.js: Cross-browser full element.classList implementation.
+ * 1.1.20170427
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: Dedicated to the public domain.
+ *   See https://github.com/eligrey/classList.js/blob/master/LICENSE.md
+ */
+
+/*global self, document, DOMException */
+
+/*! @source http://purl.eligrey.com/github/classList.js/blob/master/classList.js */
+
+if ("document" in window.self) {
+
+// Full polyfill for browsers with no classList support
+// Including IE < Edge missing SVGElement.classList
+if (!("classList" in document.createElement("_")) 
+	|| document.createElementNS && !("classList" in document.createElementNS("http://www.w3.org/2000/svg","g"))) {
+
+(function (view) {
 
 "use strict";
 
+if (!('Element' in view)) return;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var
+	  classListProp = "classList"
+	, protoProp = "prototype"
+	, elemCtrProto = view.Element[protoProp]
+	, objCtr = Object
+	, strTrim = String[protoProp].trim || function () {
+		return this.replace(/^\s+|\s+$/g, "");
+	}
+	, arrIndexOf = Array[protoProp].indexOf || function (item) {
+		var
+			  i = 0
+			, len = this.length
+		;
+		for (; i < len; i++) {
+			if (i in this && this[i] === item) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	// Vendors: please allow content code to instantiate DOMExceptions
+	, DOMEx = function (type, message) {
+		this.name = type;
+		this.code = DOMException[type];
+		this.message = message;
+	}
+	, checkTokenAndGetIndex = function (classList, token) {
+		if (token === "") {
+			throw new DOMEx(
+				  "SYNTAX_ERR"
+				, "An invalid or illegal string was specified"
+			);
+		}
+		if (/\s/.test(token)) {
+			throw new DOMEx(
+				  "INVALID_CHARACTER_ERR"
+				, "String contains an invalid character"
+			);
+		}
+		return arrIndexOf.call(classList, token);
+	}
+	, ClassList = function (elem) {
+		var
+			  trimmedClasses = strTrim.call(elem.getAttribute("class") || "")
+			, classes = trimmedClasses ? trimmedClasses.split(/\s+/) : []
+			, i = 0
+			, len = classes.length
+		;
+		for (; i < len; i++) {
+			this.push(classes[i]);
+		}
+		this._updateClassName = function () {
+			elem.setAttribute("class", this.toString());
+		};
+	}
+	, classListProto = ClassList[protoProp] = []
+	, classListGetter = function () {
+		return new ClassList(this);
+	}
+;
+// Most DOMException implementations don't allow calling DOMException's toString()
+// on non-DOMExceptions. Error's toString() is sufficient here.
+DOMEx[protoProp] = Error[protoProp];
+classListProto.item = function (i) {
+	return this[i] || null;
+};
+classListProto.contains = function (token) {
+	token += "";
+	return checkTokenAndGetIndex(this, token) !== -1;
+};
+classListProto.add = function () {
+	var
+		  tokens = arguments
+		, i = 0
+		, l = tokens.length
+		, token
+		, updated = false
+	;
+	do {
+		token = tokens[i] + "";
+		if (checkTokenAndGetIndex(this, token) === -1) {
+			this.push(token);
+			updated = true;
+		}
+	}
+	while (++i < l);
 
-var _Helper = __webpack_require__(1);
+	if (updated) {
+		this._updateClassName();
+	}
+};
+classListProto.remove = function () {
+	var
+		  tokens = arguments
+		, i = 0
+		, l = tokens.length
+		, token
+		, updated = false
+		, index
+	;
+	do {
+		token = tokens[i] + "";
+		index = checkTokenAndGetIndex(this, token);
+		while (index !== -1) {
+			this.splice(index, 1);
+			updated = true;
+			index = checkTokenAndGetIndex(this, token);
+		}
+	}
+	while (++i < l);
 
-var _Helper2 = _interopRequireDefault(_Helper);
+	if (updated) {
+		this._updateClassName();
+	}
+};
+classListProto.toggle = function (token, force) {
+	token += "";
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var
+		  result = this.contains(token)
+		, method = result ?
+			force !== true && "remove"
+		:
+			force !== false && "add"
+	;
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	if (method) {
+		this[method](token);
+	}
 
-var NOT_CAPTURED_EVENTS = [];
-var EventListener = function () {
-    function EventListener(el, contextMenuData) {
-        _classCallCheck(this, EventListener);
-
-        if (!window.instanceId) {
-            window.instanceId = 0;
-        }
-        this.instanceId = window.instanceId++;
-
-        this.contextMenuData = contextMenuData || null;
-        this.el = el;
-        this.events = {};
-        this.eventData = {};
-        this._onEvent = this._onEvent.bind(this);
-    }
-
-    _createClass(EventListener, [{
-        key: 'destruct',
-        value: function destruct() {
-            if (this.events !== null) {
-                Object.keys(this.events).forEach(function (eventName) {
-                    var useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
-                    this.el.removeEventListener(eventName, this._onEvent, useCapture);
-                }, this);
-            }
-
-            this.context = null;
-            this.contextMenuData = null;
-            this.el = null;
-            this.events = null;
-            this.eventData = null;
-        }
-    }, {
-        key: 'off',
-        value: function off(eventName, selector, callback) {
-            if (typeof selector !== 'string') {
-                callback = selector;
-                selector = '';
-            }
-
-            if (callback) {
-                var events = this.events[eventName];
-                if (events) {
-                    events = events[selector];
-                    if (events) {
-                        for (var i = 0; i < events.length; i++) {
-                            if (events[i] === callback) {
-                                events.splice(i, 1);
-                                i--;
-                            }
-                        }
-                    }
-                }
-            } else {
-                if (this.events.hasOwnProperty(eventName) && this.events[eventName].hasOwnProperty(selector)) {
-                    this.events[eventName][selector] = [];
-                }
-            }
-            return this;
-        }
-    }, {
-        key: 'on',
-        value: function on(eventName, selector, callback) {
-            var data = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-
-            if (typeof eventName !== 'string') {
-                var eventsMap = eventName;
-                for (var key in eventsMap) {
-                    if (eventsMap.hasOwnProperty(key)) {
-                        var split = key.split(' ');
-                        if (split.length > 1) {
-                            this.on(split[0], split[1], eventsMap[key], data);
-                        } else {
-                            this.on(split[0], '', eventsMap[key], data);
-                        }
-                    }
-                }
-                return this;
-            }
-
-            if (typeof selector !== 'string') {
-                callback = selector;
-                selector = '';
-            }
-
-            if (!this.events.hasOwnProperty(eventName)) {
-                var useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
-                this.el.addEventListener(eventName, this._onEvent, useCapture);
-
-                this.events[eventName] = {};
-            }
-
-            if (!this.events[eventName].hasOwnProperty(selector)) {
-                this.events[eventName][selector] = [];
-            }
-
-            if (this.events[eventName][selector].indexOf(callback) < 0) {
-                this.events[eventName][selector].push(callback);
-            }
-
-            if (data) {
-                if (!this.eventData.hasOwnProperty(eventName)) {
-                    this.eventData[eventName] = {};
-                }
-                if (!this.eventData[eventName].hasOwnProperty(selector)) {
-                    this.eventData[eventName][selector] = data;
-                }
-            }
-
-            return this;
-        }
-    }, {
-        key: '_onEvent',
-        value: function _onEvent(event) {
-            var isPropagationStopped = false;
-            var stopPropagation = event.stopPropagation;
-            event.stopPropagation = function () {
-                stopPropagation.call(event);
-                isPropagationStopped = true;
-            };
-
-            if (event.detail && event.detail.data) {
-                event._contextMenuData = event.detail.data;
-            } else {
-                event._contextMenuData = this.contextMenuData;
-            }
-
-            var target = event.target;
-
-            var events = this.events[event.type.toLowerCase()];
-            var eventData = this.eventData[event.type.toLowerCase()];
-
-            while (target && target !== this.el && isPropagationStopped === false) {
-                for (var selector in events) {
-                    if (selector && eventData && eventData.hasOwnProperty(selector) && _Helper2.default.matchesSelector(target, selector)) {
-                        event._extraContextMenuData = eventData[selector];
-                    }
-
-                    if (selector && events.hasOwnProperty(selector) && _Helper2.default.matchesSelector(target, selector)) {
-                        this.context = target;
-                        EventListener.callAll(events[selector], event, this.context);
-                    }
-                }
-                target = target.parentElement;
-                if (isPropagationStopped === true) {
-                    break;
-                }
-            }
-
-            if (isPropagationStopped === false && events.hasOwnProperty('')) {
-                EventListener.callAll(events[''], event, this.context);
-            }
-        }
-    }], [{
-        key: 'triggerEvent',
-        value: function triggerEvent(el, eventName) {
-            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-            var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
-            var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
-
-            var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
-            el.dispatchEvent(event);
-            return !event.defaultPrevented;
-        }
-    }, {
-        key: 'callAll',
-        value: function callAll(callbacks, event, context) {
-            for (var i = 0; i < callbacks.length; i++) {
-                callbacks[i].call(context, event);
-            }
-        }
-    }]);
-
-    return EventListener;
-}();
-
-module.exports = EventListener;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Helper = function () {
-    function Helper() {
-        _classCallCheck(this, Helper);
-    }
-
-    _createClass(Helper, null, [{
-        key: 'isVisible',
-        value: function isVisible(elem) {
-            return !!(elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length);
-        }
-    }, {
-        key: 'matchesSelector',
-        value: function matchesSelector(el, selector) {
-            var method = el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;
-            return method.call(el, selector);
-        }
-    }, {
-        key: 'zindex',
-        value: function zindex($t) {
-            var zin = 0;
-            var $tt = $t;
-
-            while (true) {
-                zin = Math.max(zin, parseInt($tt.css('z-index'), 10) || 0);
-                $tt = $tt.parent();
-                if (!$tt || !$tt.length || 'html body'.indexOf($tt.prop('nodeName').toLowerCase()) > -1) {
-                    break;
-                }
-            }
-            return zin;
-        }
-    }, {
-        key: 'splitAccesskey',
-        value: function splitAccesskey(val) {
-            var t = val.split(/\s+/);
-            var keys = [];
-
-            for (var i = 0, k; k = t[i]; i++) {
-                k = k.charAt(0).toUpperCase();
-                keys.push(k);
-            }
-
-            return keys;
-        }
-    }]);
-
-    return Helper;
-}();
-
-exports.default = Helper;
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var ItemTypes = {
-  simple: '',
-
-  text: 'text',
-
-  textarea: 'textarea',
-
-  checkbox: 'checkbox',
-
-  radio: 'radio',
-
-  select: 'select',
-
-  html: 'html',
-
-  separator: 'cm_separator',
-
-  submenu: 'sub'
+	if (force === true || force === false) {
+		return force;
+	} else {
+		return !result;
+	}
+};
+classListProto.toString = function () {
+	return this.join(" ");
 };
 
-exports.default = ItemTypes;
+if (objCtr.defineProperty) {
+	var classListPropDesc = {
+		  get: classListGetter
+		, enumerable: true
+		, configurable: true
+	};
+	try {
+		objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
+	} catch (ex) { // IE 8 doesn't support enumerable:true
+		// adding undefined to fight this issue https://github.com/eligrey/classList.js/issues/36
+		// modernie IE8-MSW7 machine has IE8 8.0.6001.18702 and is affected
+		if (ex.number === undefined || ex.number === -0x7FF5EC54) {
+			classListPropDesc.enumerable = false;
+			objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
+		}
+	}
+} else if (objCtr[protoProp].__defineGetter__) {
+	elemCtrProto.__defineGetter__(classListProp, classListGetter);
+}
+
+}(window.self));
+
+}
+
+// There is full or partial native classList support, so just check if we need
+// to normalize the add/remove and toggle APIs.
+
+(function () {
+	"use strict";
+
+	var testElement = document.createElement("_");
+
+	testElement.classList.add("c1", "c2");
+
+	// Polyfill for IE 10/11 and Firefox <26, where classList.add and
+	// classList.remove exist but support only one argument at a time.
+	if (!testElement.classList.contains("c2")) {
+		var createMethod = function(method) {
+			var original = DOMTokenList.prototype[method];
+
+			DOMTokenList.prototype[method] = function(token) {
+				var i, len = arguments.length;
+
+				for (i = 0; i < len; i++) {
+					token = arguments[i];
+					original.call(this, token);
+				}
+			};
+		};
+		createMethod('add');
+		createMethod('remove');
+	}
+
+	testElement.classList.toggle("c3", false);
+
+	// Polyfill for IE 10 and Firefox <24, where classList.toggle does not
+	// support the second argument.
+	if (testElement.classList.contains("c3")) {
+		var _toggle = DOMTokenList.prototype.toggle;
+
+		DOMTokenList.prototype.toggle = function(token, force) {
+			if (1 in arguments && !this.contains(token) === !force) {
+				return force;
+			} else {
+				return _toggle.call(this, token);
+			}
+		};
+
+	}
+
+	testElement = null;
+}());
+
+}
+
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+/***/ "./node_modules/custom-event-polyfill/polyfill.js":
+/*!********************************************************!*\
+  !*** ./node_modules/custom-event-polyfill/polyfill.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
 
+// Polyfill for creating CustomEvents on IE9/10/11
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
+// code pulled from:
+// https://github.com/d4tocchini/customevent-polyfill
+// https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent#Polyfill
 
-var _position = __webpack_require__(6);
+(function() {
+  if (typeof window === 'undefined') {
+    return;
+  }
 
-exports.default = {
+  try {
+    var ce = new window.CustomEvent('test', { cancelable: true });
+    ce.preventDefault();
+    if (ce.defaultPrevented !== true) {
+      // IE has problems with .preventDefault() on custom events
+      // http://stackoverflow.com/questions/23349191
+      throw new Error('Could not prevent default');
+    }
+  } catch (e) {
+    var CustomEvent = function(event, params) {
+      var evt, origPrevent;
+      params = params || {
+        bubbles: false,
+        cancelable: false,
+        detail: undefined
+      };
 
-    baseElement: document,
+      evt = document.createEvent('CustomEvent');
+      evt.initCustomEvent(
+        event,
+        params.bubbles,
+        params.cancelable,
+        params.detail
+      );
+      origPrevent = evt.preventDefault;
+      evt.preventDefault = function() {
+        origPrevent.call(this);
+        try {
+          Object.defineProperty(this, 'defaultPrevented', {
+            get: function() {
+              return true;
+            }
+          });
+        } catch (e) {
+          this.defaultPrevented = true;
+        }
+      };
+      return evt;
+    };
 
-    selector: null,
+    CustomEvent.prototype = window.Event.prototype;
+    window.CustomEvent = CustomEvent; // expose definition to window
+  }
+})();
 
-    appendTo: null,
-
-    trigger: 'right',
-
-    autoHide: false,
-
-    delay: 200,
-
-    reposition: true,
-
-    hideOnSecondTrigger: false,
-
-    selectableSubMenu: false,
-
-    className: '',
-
-    classNames: {
-        hover: 'context-menu-hover',
-        disabled: 'context-menu-disabled',
-        visible: 'context-menu-visible',
-        notSelectable: 'context-menu-not-selectable',
-
-        icon: 'context-menu-icon',
-        iconEdit: 'context-menu-icon-edit',
-        iconCut: 'context-menu-icon-cut',
-        iconCopy: 'context-menu-icon-copy',
-        iconPaste: 'context-menu-icon-paste',
-        iconDelete: 'context-menu-icon-delete',
-        iconAdd: 'context-menu-icon-add',
-        iconQuit: 'context-menu-icon-quit',
-        iconLoadingClass: 'context-menu-icon-loading'
-    },
-
-    zIndex: 1,
-
-    animation: {
-        duration: 50,
-        show: 'slideDown',
-        hide: 'slideUp'
-    },
-
-    events: {
-        show: $.noop,
-        hide: $.noop,
-        activated: $.noop
-    },
-
-    callback: null,
-
-    items: {},
-
-    build: false,
-
-    types: {},
-
-    determinePosition: _position.determinePosition,
-
-    position: _position.position,
-
-    positionSubmenu: _position.positionSubmenu
-};
 
 /***/ }),
-/* 4 */
+
+/***/ "./src/js/classes/ContextMenu.js":
+/*!***************************************!*\
+  !*** ./src/js/classes/ContextMenu.js ***!
+  \***************************************/
+/*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -474,27 +420,27 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Operations = __webpack_require__(5);
+var _Operations = __webpack_require__(/*! ./Operations */ "./src/js/classes/Operations.js");
 
 var _Operations2 = _interopRequireDefault(_Operations);
 
-var _defaults = __webpack_require__(3);
+var _defaults = __webpack_require__(/*! ../defaults */ "./src/js/defaults/index.js");
 
 var _defaults2 = _interopRequireDefault(_defaults);
 
-var _Html5Builder = __webpack_require__(7);
+var _Html5Builder = __webpack_require__(/*! ./Html5Builder */ "./src/js/classes/Html5Builder.js");
 
 var _Html5Builder2 = _interopRequireDefault(_Html5Builder);
 
-var _EventHandler = __webpack_require__(8);
+var _EventHandler = __webpack_require__(/*! ./EventHandler */ "./src/js/classes/EventHandler.js");
 
 var _EventHandler2 = _interopRequireDefault(_EventHandler);
 
-var _EventListener = __webpack_require__(0);
+var _EventListener = __webpack_require__(/*! ./EventListener */ "./src/js/classes/EventListener.js");
 
 var _EventListener2 = _interopRequireDefault(_EventListener);
 
-var _Helper = __webpack_require__(1);
+var _Helper = __webpack_require__(/*! ./Helper */ "./src/js/classes/Helper.js");
 
 var _Helper2 = _interopRequireDefault(_Helper);
 
@@ -861,695 +807,12 @@ var ContextMenu = function () {
 exports.default = ContextMenu;
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Helper = __webpack_require__(1);
-
-var _Helper2 = _interopRequireDefault(_Helper);
-
-var _ItemTypes = __webpack_require__(2);
-
-var _ItemTypes2 = _interopRequireDefault(_ItemTypes);
-
-var _EventListener = __webpack_require__(0);
-
-var _EventListener2 = _interopRequireDefault(_EventListener);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Operations = function () {
-    function Operations() {
-        _classCallCheck(this, Operations);
-
-        return this;
-    }
-
-    _createClass(Operations, [{
-        key: 'show',
-        value: function show(e, menuData, x, y) {
-            var $trigger = $(e.target);
-            var css = {};
-
-            var layer = document.getElementById('#context-menu-layer');
-            if (layer) {
-                _EventListener2.default.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
-            }
-
-            menuData.$trigger = $trigger;
-
-            if (menuData.events.show.call($trigger, e, menuData) === false) {
-                menuData.manager.handler.$currentTrigger = null;
-                return;
-            }
-
-            var hasVisibleItems = menuData.manager.operations.update.call($trigger, e, menuData);
-
-            if (hasVisibleItems === false) {
-                menuData.manager.handler.$currentTrigger = null;
-                return;
-            }
-
-            menuData.position.call($trigger, e, menuData, x, y);
-
-            if (menuData.zIndex) {
-                var additionalZValue = menuData.zIndex;
-
-                if (typeof menuData.zIndex === 'function') {
-                    additionalZValue = menuData.zIndex.call($trigger, menuData);
-                }
-                css.zIndex = _Helper2.default.zindex($trigger) + additionalZValue;
-            }
-
-            menuData.manager.operations.layer.call(menuData.$menu, e, menuData, css.zIndex);
-
-            menuData.$menu.find('ul').css('zIndex', css.zIndex + 1);
-
-            menuData.$menu.css(css)[menuData.animation.show](menuData.animation.duration, function () {
-                _EventListener2.default.triggerEvent($trigger.get(0), 'contextmenu:visible');
-
-                menuData.manager.operations.activated(e, menuData);
-                menuData.events.activated($trigger, e, menuData);
-            });
-
-            $trigger.data('contextMenu', menuData).addClass('context-menu-active');
-
-            menuData.listeners.baseElement.off('keydown').on('keydown', menuData.manager.handler.key);
-
-            if (menuData.autoHide) {
-                menuData.listeners.contextMenuAutoHide.on('mousemove', function (e) {
-                    var pos = $trigger.offset();
-                    pos.right = pos.left + $trigger.outerWidth();
-                    pos.bottom = pos.top + $trigger.outerHeight();
-
-                    if (menuData.$layer && !menuData.hovering && (!(e.pageX >= pos.left && e.pageX <= pos.right) || !(e.pageY >= pos.top && e.pageY <= pos.bottom))) {
-                        setTimeout(function () {
-                            if (!menuData.hovering && menuData.$menu !== null && typeof menuData.$menu !== 'undefined') {
-                                _EventListener2.default.triggerEvent(menuData.$menu.get(0), 'contextmenu:hide');
-                            }
-                        }, 50);
-                    }
-                });
-            }
-        }
-    }, {
-        key: 'hide',
-        value: function hide(e, menuData, force) {
-            var $trigger = $(this);
-            if ((typeof menuData === 'undefined' ? 'undefined' : _typeof(menuData)) !== 'object' && $trigger.data('contextMenu')) {
-                menuData = $trigger.data('contextMenu');
-            } else if ((typeof menuData === 'undefined' ? 'undefined' : _typeof(menuData)) !== 'object') {
-                return;
-            }
-
-            if (!force && menuData.events && menuData.events.hide.call($trigger, e, menuData) === false) {
-                return;
-            }
-
-            $trigger.removeData('contextMenu').removeClass('context-menu-active');
-
-            if (menuData.$layer) {
-                setTimeout(function ($layer) {
-                    return function () {
-                        $layer.remove();
-                    };
-                }(menuData.$layer), 10);
-
-                try {
-                    delete menuData.$layer;
-                } catch (e) {
-                    menuData.$layer = null;
-                }
-            }
-
-            menuData.manager.handler.$currentTrigger = null;
-
-            menuData.$menu.find('.' + menuData.classNames.hover).trigger('contextmenu:blur');
-            menuData.$selected = null;
-
-            menuData.$menu.find('.' + menuData.classNames.visible).removeClass(menuData.classNames.visible);
-
-            if (menuData.listeners.contextMenuAutoHide) {
-                menuData.listeners.contextMenuAutoHide.destruct();
-            }
-            menuData.listeners.baseElement.off('keydown');
-
-            if (menuData.$menu) {
-                menuData.$menu[menuData.animation.hide](menuData.animation.duration, function () {
-                    if (menuData.build) {
-                        menuData.$menu.remove();
-                        Object.keys(menuData).forEach(function (key) {
-                            switch (key) {
-                                case 'ns':
-                                case 'selector':
-                                case 'build':
-                                case 'trigger':
-                                    return true;
-                                default:
-                                    menuData[key] = undefined;
-                                    try {
-                                        delete menuData[key];
-                                    } catch (e) {}
-                                    return true;
-                            }
-                        });
-                    }
-
-                    setTimeout(function () {
-                        _EventListener2.default.triggerEvent($trigger.get(0), 'contextmenu:hidden');
-                    }, 10);
-                });
-            }
-        }
-    }, {
-        key: 'create',
-        value: function create(e, currentMenuData, rootMenuData) {
-            var _this = this;
-
-            if (typeof rootMenuData === 'undefined') {
-                rootMenuData = currentMenuData;
-            }
-
-            var menuElement = document.createElement('ul');
-            menuElement.className = 'context-menu-list ' + (currentMenuData.className || '');
-
-            currentMenuData.menuElement = menuElement;
-            menuElement.contextMenu = currentMenuData;
-            menuElement.contextMenuRoot = currentMenuData;
-
-            currentMenuData.$menu = $(menuElement).addClass(currentMenuData.className || '').data({
-                'contextMenu': currentMenuData,
-                'contextMenuRoot': rootMenuData
-            });
-
-            ['callbacks', 'commands', 'inputs'].forEach(function (k) {
-                currentMenuData[k] = {};
-                if (!rootMenuData[k]) {
-                    rootMenuData[k] = {};
-                }
-            });
-
-            if (!rootMenuData.accesskeys) {
-                rootMenuData.accesskeys = {};
-            }
-
-            function createNameNode(item) {
-                var $name = $('<span></span>');
-                if (item._accesskey) {
-                    if (item._beforeAccesskey) {
-                        $name.append(document.createTextNode(item._beforeAccesskey));
-                    }
-                    $('<span></span>').addClass('context-menu-accesskey').text(item._accesskey).appendTo($name);
-                    if (item._afterAccesskey) {
-                        $name.append(document.createTextNode(item._afterAccesskey));
-                    }
-                } else {
-                    if (item.isHtmlName) {
-                        if (typeof item.accesskey !== 'undefined') {
-                            throw new Error('accesskeys are not compatible with HTML names and cannot be used together in the same item');
-                        }
-                        $name.html(item.name);
-                    } else {
-                        $name.text(item.name);
-                    }
-                }
-                return $name;
-            }
-
-            Object.keys(currentMenuData.items).forEach(function (key) {
-                var item = currentMenuData.items[key];
-                var $t = $('<li class="context-menu-item"></li>').addClass(item.className || '');
-                var $label = null;
-                var $input = null;
-
-                $t.on('click', $.noop);
-
-                if (typeof item === 'string' || item.type === 'cm_seperator') {
-                    item = { type: _ItemTypes2.default.separator };
-                }
-
-                item.$node = $t.data({
-                    'contextMenu': currentMenuData,
-                    'contextMenuRoot': rootMenuData,
-                    'contextMenuKey': key
-                });
-
-                if (typeof item.listeners === 'undefined') {
-                    item.listeners = {};
-                }
-
-                if (typeof item.accesskey !== 'undefined') {
-                    var aks = _Helper2.default.splitAccesskey(item.accesskey);
-                    for (var i = 0, ak; ak = aks[i]; i++) {
-                        if (!rootMenuData.accesskeys[ak]) {
-                            rootMenuData.accesskeys[ak] = item;
-                            var matched = item.name.match(new RegExp('^(.*?)(' + ak + ')(.*)$', 'i'));
-                            if (matched) {
-                                item._beforeAccesskey = matched[1];
-                                item._accesskey = matched[2];
-                                item._afterAccesskey = matched[3];
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                if (item.type && rootMenuData.types[item.type]) {
-                    rootMenuData.types[item.type].call($t, e, item, currentMenuData, rootMenuData);
-
-                    [currentMenuData, rootMenuData].forEach(function (k) {
-                        k.commands[key] = item;
-
-                        if (typeof item.callback === 'function' && (typeof k.callbacks[key] === 'undefined' || typeof currentMenuData.type === 'undefined')) {
-                            k.callbacks[key] = item.callback;
-                        }
-                    });
-                } else {
-                    if (item.type === _ItemTypes2.default.separator) {
-                        $t.addClass('context-menu-separator ' + rootMenuData.classNames.notSelectable);
-                    } else if (item.type === _ItemTypes2.default.html) {
-                        $t.addClass('context-menu-html ' + rootMenuData.classNames.notSelectable);
-                    } else if (item.type && item.type !== _ItemTypes2.default.submenu) {
-                        $label = $('<label></label>').appendTo($t);
-                        createNameNode(item).appendTo($label);
-
-                        $t.addClass('context-menu-input');
-                        currentMenuData.hasTypes = true;
-                        [currentMenuData, rootMenuData].forEach(function (k) {
-                            k.commands[key] = item;
-                            k.inputs[key] = item;
-                        });
-                    } else if (item.items) {
-                        item.type = _ItemTypes2.default.submenu;
-                    }
-
-                    switch (item.type) {
-                        case _ItemTypes2.default.separator:
-                            break;
-
-                        case _ItemTypes2.default.text:
-                            $input = $('<input type="text" value="1" name="" />').attr('name', 'context-menu-input-' + key).val(item.value || '').appendTo($label);
-                            break;
-
-                        case _ItemTypes2.default.textarea:
-                            $input = $('<textarea name=""></textarea>').attr('name', 'context-menu-input-' + key).val(item.value || '').appendTo($label);
-
-                            if (item.height) {
-                                $input.height(item.height);
-                            }
-                            break;
-
-                        case _ItemTypes2.default.checkbox:
-                            $input = $('<input type="checkbox" value="1" name="" />').attr('name', 'context-menu-input-' + key).val(item.value || '').prop('checked', !!item.selected).prependTo($label);
-                            break;
-
-                        case _ItemTypes2.default.radio:
-                            $input = $('<input type="radio" value="1" name="" />').attr('name', 'context-menu-input-' + item.radio).val(item.value || '').prop('checked', !!item.selected).prependTo($label);
-                            break;
-
-                        case _ItemTypes2.default.select:
-                            $input = $('<select name=""></select>').attr('name', 'context-menu-input-' + key).appendTo($label);
-                            if (item.options) {
-                                Object.keys(item.options).forEach(function (value) {
-                                    $('<option></option>').val(value).text(item.options[value]).appendTo($input);
-                                });
-                                $input.val(item.selected);
-                            }
-                            break;
-
-                        case _ItemTypes2.default.submenu:
-                            createNameNode(item).appendTo($t);
-                            $t.addClass('item-' + item.name);
-                            item.appendTo = item.$node;
-                            $t.data('contextMenu', item).addClass('context-menu-submenu');
-
-                            item.callback = null;
-
-                            if (typeof item.items.then === 'function') {
-                                rootMenuData.manager.operations.processPromises(e, item, rootMenuData, item.items);
-                            } else {
-                                rootMenuData.manager.operations.create(e, item, rootMenuData);
-                            }
-                            break;
-
-                        case _ItemTypes2.default.html:
-                            $(item.html).appendTo($t);
-                            break;
-
-                        default:
-                            [currentMenuData, rootMenuData].forEach(function (k) {
-                                k.commands[key] = item;
-
-                                if (typeof item.callback === 'function' && (typeof k.callbacks[key] === 'undefined' || typeof currentMenuData.type === 'undefined')) {
-                                    k.callbacks[key] = item.callback;
-                                }
-                            });
-                            createNameNode(item).appendTo($t);
-                            break;
-                    }
-
-                    if (item.type && item.type !== _ItemTypes2.default.submenu && item.type !== _ItemTypes2.default.html && item.type !== _ItemTypes2.default.separator) {
-                        item.listeners.input = new _EventListener2.default($input.get(0), rootMenuData);
-                        item.listeners.input.on('focus', rootMenuData.manager.handler.focusInput).on('blur', rootMenuData.manager.handler.blurInput);
-
-                        if (item.events) {
-                            item.listeners.input.on(item.events, currentMenuData);
-                        }
-                    }
-
-                    if (item.icon) {
-                        if (typeof item.icon === 'function') {
-                            item._icon = item.icon.call(_this, e, $t, key, item, currentMenuData, rootMenuData);
-                        } else {
-                            if (typeof item.icon === 'string' && item.icon.substring(0, 3) === 'fa-') {
-                                item._icon = rootMenuData.classNames.icon + ' ' + rootMenuData.classNames.icon + '--fa fa ' + item.icon;
-                            } else {
-                                item._icon = rootMenuData.classNames.icon + ' ' + rootMenuData.classNames.icon + '-' + item.icon;
-                            }
-                        }
-                        $t.addClass(item._icon);
-                    }
-                }
-
-                item.$input = $input;
-                item.$label = $label;
-
-                $t.appendTo(currentMenuData.$menu);
-
-                if (!currentMenuData.hasTypes && $.support.eventSelectstart) {
-                    $t.on('selectstart.disableTextSelect', currentMenuData.manager.handler.abortevent);
-                }
-            });
-
-            if (!currentMenuData.$node) {
-                currentMenuData.$menu.css('display', 'none').addClass('context-menu-root');
-            }
-            currentMenuData.$menu.appendTo(currentMenuData.appendTo || document.body);
-        }
-    }, {
-        key: 'resize',
-        value: function resize(e, $menu, nested) {
-            var domMenu = void 0;
-
-            $menu.css({ position: 'absolute', display: 'block' });
-
-            $menu.data('width', (domMenu = $menu.get(0)).getBoundingClientRect ? Math.ceil(domMenu.getBoundingClientRect().width) : $menu.outerWidth() + 1);
-            $menu.css({
-                position: 'static',
-                minWidth: '0px',
-                maxWidth: '100000px'
-            });
-
-            $menu.find('> li > ul').each(function (index, element) {
-                e._contextMenuData.manager.operations.resize(e, $(element), true);
-            });
-
-            if (!nested) {
-                $menu.find('ul').addBack().css({
-                    position: '',
-                    display: '',
-                    minWidth: '',
-                    maxWidth: ''
-                }).outerWidth(function () {
-                    return $(this).data('width');
-                });
-            }
-        }
-    }, {
-        key: 'update',
-        value: function update(e, currentMenuData, rootMenuData) {
-            var $trigger = this;
-            if (typeof rootMenuData === 'undefined') {
-                rootMenuData = currentMenuData;
-                rootMenuData.manager.operations.resize(e, currentMenuData.$menu);
-            }
-
-            var hasVisibleItems = false;
-
-            currentMenuData.$menu.children().each(function (index, element) {
-                var $item = $(element);
-                var key = $item.data('contextMenuKey');
-                var item = currentMenuData.items[key];
-
-                var disabled = typeof item.disabled === 'function' && item.disabled.call($trigger, e, key, currentMenuData, rootMenuData) || item.disabled === true;
-                var visible = void 0;
-
-                if (typeof item.visible === 'function') {
-                    visible = item.visible.call($trigger, e, key, currentMenuData, rootMenuData);
-                } else if (typeof item.visible !== 'undefined') {
-                    visible = item.visible === true;
-                } else {
-                    visible = true;
-                }
-
-                if (visible) {
-                    hasVisibleItems = true;
-                }
-
-                $item[visible ? 'show' : 'hide']();
-
-                $item[disabled ? 'addClass' : 'removeClass'](rootMenuData.classNames.disabled);
-
-                if (typeof item.icon === 'function') {
-                    $item.removeClass(item._icon);
-                    item._icon = item.icon.call($trigger, e, $item, key, item, currentMenuData, rootMenuData);
-                    $item.addClass(item._icon);
-                }
-
-                if (item.type) {
-                    $item.find('input, select, textarea').prop('disabled', disabled);
-
-                    switch (item.type) {
-                        case _ItemTypes2.default.text:
-                        case _ItemTypes2.default.textarea:
-                            item.$input.val(item.value || '');
-                            break;
-
-                        case _ItemTypes2.default.checkbox:
-                        case _ItemTypes2.default.radio:
-                            item.$input.val(item.value || '').prop('checked', !!item.selected);
-                            break;
-
-                        case _ItemTypes2.default.select:
-                            item.$input.val((item.selected === 0 ? '0' : item.selected) || '');
-                            break;
-                    }
-                }
-
-                if (item.$menu) {
-                    var subMenuHasVisibleItems = rootMenuData.manager.operations.update.call($trigger, e, item, rootMenuData);
-                    if (subMenuHasVisibleItems) {
-                        hasVisibleItems = true;
-                    }
-                }
-            });
-
-            return hasVisibleItems;
-        }
-    }, {
-        key: 'layer',
-        value: function layer(e, menuData, zIndex) {
-            var $window = $(window);
-
-            var $layer = menuData.$layer = $('<div id="context-menu-layer"></div>').css({
-                height: $window.height(),
-                width: $window.width(),
-                display: 'block',
-                position: 'fixed',
-                'z-index': zIndex,
-                top: 0,
-                left: 0,
-                opacity: 0,
-                filter: 'alpha(opacity=0)',
-                'background-color': '#000'
-            }).data('contextMenuRoot', menuData).insertBefore(this);
-
-            menuData.listeners.layer = new _EventListener2.default($layer.get(0), menuData);
-            menuData.listeners.layer.on('contextmenu', menuData.manager.handler.abortevent).on('mousedown', menuData.manager.handler.layerClick);
-
-            if (typeof document.body.style.maxWidth === 'undefined') {
-                $layer.css({
-                    'position': 'absolute',
-                    'height': $(document).height()
-                });
-            }
-
-            return $layer;
-        }
-    }, {
-        key: 'processPromises',
-        value: function processPromises(e, currentMenuData, rootMenuData, promise) {
-            currentMenuData.$node.addClass(rootMenuData.classNames.iconLoadingClass);
-
-            function finishPromiseProcess(currentMenuData, rootMenuData, items) {
-                if (typeof rootMenuData.$menu === 'undefined' || !rootMenuData.$menu.is(':visible')) {
-                    return;
-                }
-                currentMenuData.$node.removeClass(rootMenuData.classNames.iconLoadingClass);
-                currentMenuData.items = items;
-                rootMenuData.manager.operations.create(e, currentMenuData, rootMenuData);
-                rootMenuData.manager.operations.update(e, currentMenuData, rootMenuData);
-                rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
-            }
-
-            function errorPromise(currentMenuData, rootMenuData, errorItem) {
-                if (typeof errorItem === 'undefined') {
-                    errorItem = {
-                        'error': {
-                            name: 'No items and no error item',
-                            icon: 'context-menu-icon context-menu-icon-quit'
-                        }
-                    };
-                    if (window.console) {
-                        (console.error || console.log).call(console, 'When you reject a promise, provide an "items" object, equal to normal sub-menu items');
-                    }
-                } else if (typeof errorItem === 'string') {
-                    errorItem = { 'error': { name: errorItem } };
-                }
-                finishPromiseProcess(currentMenuData, rootMenuData, errorItem);
-            }
-
-            function completedPromise(currentMenuData, rootMenuData, items) {
-                if (typeof items === 'undefined') {
-                    errorPromise(undefined);
-                }
-                finishPromiseProcess(currentMenuData, rootMenuData, items);
-            }
-
-            promise.then(completedPromise.bind(this, currentMenuData, rootMenuData), errorPromise.bind(this, currentMenuData, rootMenuData));
-        }
-    }, {
-        key: 'activated',
-        value: function activated(e, menuData) {
-            var $menu = menuData.$menu;
-            var $menuOffset = $menu.offset();
-            var winHeight = $(window).height();
-            var winScrollTop = $(window).scrollTop();
-            var menuHeight = $menu.height();
-            if (menuHeight > winHeight) {
-                $menu.css({
-                    'height': winHeight + 'px',
-                    'overflow-x': 'hidden',
-                    'overflow-y': 'auto',
-                    'top': winScrollTop + 'px'
-                });
-            } else if ($menuOffset.top < winScrollTop || $menuOffset.top + menuHeight > winScrollTop + winHeight) {
-                $menu.css({
-                    'top': '0px'
-                });
-            }
-        }
-    }]);
-
-    return Operations;
-}();
-
-exports.default = Operations;
-;
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.determinePosition = determinePosition;
-exports.position = position;
-exports.positionSubmenu = positionSubmenu;
-function determinePosition($menu) {
-    if ($.ui && $.ui.position) {
-        $menu.css('display', 'block').position({
-            my: 'center top',
-            at: 'center bottom',
-            of: this,
-            offset: '0 5',
-            collision: 'fit'
-        }).css('display', 'none');
-    } else {
-        var offset = this.offset();
-        offset.top += this.outerHeight();
-        offset.left += this.outerWidth() / 2 - $menu.outerWidth() / 2;
-        $menu.css(offset);
-    }
-}
-
-function position(e, currentMenuData, x, y) {
-    var $window = $(window);
-    var offset = void 0;
-
-    if (!x && !y) {
-        currentMenuData.determinePosition.call(this, currentMenuData.$menu);
-        return;
-    } else if (x === 'maintain' && y === 'maintain') {
-        offset = currentMenuData.$menu.position();
-    } else {
-        var offsetParentOffset = currentMenuData.$menu.offsetParent().offset();
-        offset = { top: y - offsetParentOffset.top, left: x - offsetParentOffset.left };
-    }
-
-    var bottom = $window.scrollTop() + $window.height();
-    var right = $window.scrollLeft() + $window.width();
-    var height = currentMenuData.$menu.outerHeight();
-    var width = currentMenuData.$menu.outerWidth();
-
-    if (offset.top + height > bottom) {
-        offset.top -= height;
-    }
-
-    if (offset.top < 0) {
-        offset.top = 0;
-    }
-
-    if (offset.left + width > right) {
-        offset.left -= width;
-    }
-
-    if (offset.left < 0) {
-        offset.left = 0;
-    }
-
-    currentMenuData.$menu.css(offset);
-}
-
-function positionSubmenu(e, $menu) {
-    if (typeof $menu === 'undefined') {
-        return;
-    }
-    if ($.ui && $.ui.position) {
-        $menu.css('display', 'block').position({
-            my: 'left top-5',
-            at: 'right top',
-            of: this,
-            collision: 'flipfit fit'
-        }).css('display', '');
-    } else {
-        var offset = {
-            top: -9,
-            left: this.outerWidth() - 5
-        };
-        $menu.css(offset);
-    }
-}
-
-/***/ }),
-/* 7 */
+/***/ "./src/js/classes/EventHandler.js":
+/*!****************************************!*\
+  !*** ./src/js/classes/EventHandler.js ***!
+  \****************************************/
+/*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1561,216 +824,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Html5Builder = function () {
-    function Html5Builder() {
-        _classCallCheck(this, Html5Builder);
-    }
-
-    _createClass(Html5Builder, [{
-        key: 'inputLabel',
-        value: function inputLabel(node) {
-            return node.id && $('label[for="' + node.id + '"]').val() || node.name;
-        }
-    }, {
-        key: 'fromMenu',
-        value: function fromMenu(element) {
-            var $this = $(element);
-            var items = {};
-
-            this.build(items, $this.children());
-
-            return items;
-        }
-    }, {
-        key: 'build',
-        value: function build(items, $children, counter) {
-            if (!counter) {
-                counter = 0;
-            }
-
-            var builder = this;
-
-            $children.each(function () {
-                var $node = $(this);
-                var node = this;
-                var nodeName = this.nodeName.toLowerCase();
-                var label = void 0;
-                var item = void 0;
-
-                if (nodeName === 'label' && $node.find('input, textarea, select').length) {
-                    label = $node.text();
-                    $node = $node.children().first();
-                    node = $node.get(0);
-                    nodeName = node.nodeName.toLowerCase();
-                }
-
-                switch (nodeName) {
-                    case 'menu':
-                        item = { name: $node.attr('label'), items: {} };
-                        counter = builder.build(item.items, $node.children(), counter);
-                        break;
-
-                    case 'a':
-                    case 'button':
-                        item = {
-                            name: $node.text(),
-                            disabled: !!$node.attr('disabled'),
-                            callback: function () {
-                                return function () {
-                                    $node.get(0).click();
-                                };
-                            }()
-                        };
-                        break;
-
-                    case 'menuitem':
-                    case 'command':
-                        switch ($node.attr('type')) {
-                            case undefined:
-                            case 'command':
-                            case 'menuitem':
-                                item = {
-                                    name: $node.attr('label'),
-                                    disabled: !!$node.attr('disabled'),
-                                    icon: $node.attr('icon'),
-                                    callback: function () {
-                                        return function () {
-                                            $node.get(0).click();
-                                        };
-                                    }()
-                                };
-                                break;
-
-                            case 'checkbox':
-                                item = {
-                                    type: 'checkbox',
-                                    disabled: !!$node.attr('disabled'),
-                                    name: $node.attr('label'),
-                                    selected: !!$node.attr('checked')
-                                };
-                                break;
-                            case 'radio':
-                                item = {
-                                    type: 'radio',
-                                    disabled: !!$node.attr('disabled'),
-                                    name: $node.attr('label'),
-                                    radio: $node.attr('radiogroup'),
-                                    value: $node.attr('id'),
-                                    selected: !!$node.attr('checked')
-                                };
-                                break;
-
-                            default:
-                                item = undefined;
-                        }
-                        break;
-
-                    case 'hr':
-                        item = '-------';
-                        break;
-
-                    case 'input':
-                        switch ($node.attr('type')) {
-                            case 'text':
-                                item = {
-                                    type: 'text',
-                                    name: label || builder.inputLabel(node),
-                                    disabled: !!$node.attr('disabled'),
-                                    value: $node.val()
-                                };
-                                break;
-
-                            case 'checkbox':
-                                item = {
-                                    type: 'checkbox',
-                                    name: label || builder.inputLabel(node),
-                                    disabled: !!$node.attr('disabled'),
-                                    selected: !!$node.attr('checked')
-                                };
-                                break;
-
-                            case 'radio':
-                                item = {
-                                    type: 'radio',
-                                    name: label || builder.inputLabel(node),
-                                    disabled: !!$node.attr('disabled'),
-                                    radio: !!$node.attr('name'),
-                                    value: $node.val(),
-                                    selected: !!$node.attr('checked')
-                                };
-                                break;
-
-                            default:
-                                item = undefined;
-                                break;
-                        }
-                        break;
-
-                    case 'select':
-                        item = {
-                            type: 'select',
-                            name: label || builder.inputLabel(node),
-                            disabled: !!$node.attr('disabled'),
-                            selected: $node.val(),
-                            options: {}
-                        };
-                        $node.children().each(function () {
-                            item.options[this.value] = $(this).text();
-                        });
-                        break;
-
-                    case 'textarea':
-                        item = {
-                            type: 'textarea',
-                            name: label || builder.inputLabel(node),
-                            disabled: !!$node.attr('disabled'),
-                            value: $node.val()
-                        };
-                        break;
-
-                    case 'label':
-                        break;
-
-                    default:
-                        item = { type: 'html', html: $node.clone(true) };
-                        break;
-                }
-
-                if (item) {
-                    counter++;
-                    items['key' + counter] = item;
-                }
-            });
-
-            return counter;
-        }
-    }]);
-
-    return Html5Builder;
-}();
-
-exports.default = Html5Builder;
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _defaults = __webpack_require__(3);
+var _defaults = __webpack_require__(/*! ../defaults */ "./src/js/defaults/index.js");
 
 var _defaults2 = _interopRequireDefault(_defaults);
 
-var _EventListener = __webpack_require__(0);
+var _EventListener = __webpack_require__(/*! ./EventListener */ "./src/js/classes/EventListener.js");
 
 var _EventListener2 = _interopRequireDefault(_EventListener);
 
@@ -2450,349 +1508,1341 @@ exports.default = EventHandler;
 ;
 
 /***/ }),
-/* 9 */
+
+/***/ "./src/js/classes/EventListener.js":
+/*!*****************************************!*\
+  !*** ./src/js/classes/EventListener.js ***!
+  \*****************************************/
+/*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-if (!Element.prototype.matches) {
-    Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
-}
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-/***/ }),
-/* 10 */
-/***/ (function(module, exports) {
+var _Helper = __webpack_require__(/*! ./Helper */ "./src/js/classes/Helper.js");
 
-// Polyfill for creating CustomEvents on IE9/10/11
+var _Helper2 = _interopRequireDefault(_Helper);
 
-// code pulled from:
-// https://github.com/d4tocchini/customevent-polyfill
-// https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent#Polyfill
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-(function() {
-  if (typeof window === 'undefined') {
-    return;
-  }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  try {
-    var ce = new window.CustomEvent('test', { cancelable: true });
-    ce.preventDefault();
-    if (ce.defaultPrevented !== true) {
-      // IE has problems with .preventDefault() on custom events
-      // http://stackoverflow.com/questions/23349191
-      throw new Error('Could not prevent default');
-    }
-  } catch (e) {
-    var CustomEvent = function(event, params) {
-      var evt, origPrevent;
-      params = params || {
-        bubbles: false,
-        cancelable: false,
-        detail: undefined
-      };
+var NOT_CAPTURED_EVENTS = [];
+var EventListener = function () {
+    function EventListener(el, contextMenuData) {
+        _classCallCheck(this, EventListener);
 
-      evt = document.createEvent('CustomEvent');
-      evt.initCustomEvent(
-        event,
-        params.bubbles,
-        params.cancelable,
-        params.detail
-      );
-      origPrevent = evt.preventDefault;
-      evt.preventDefault = function() {
-        origPrevent.call(this);
-        try {
-          Object.defineProperty(this, 'defaultPrevented', {
-            get: function() {
-              return true;
-            }
-          });
-        } catch (e) {
-          this.defaultPrevented = true;
+        if (!window.instanceId) {
+            window.instanceId = 0;
         }
-      };
-      return evt;
-    };
+        this.instanceId = window.instanceId++;
 
-    CustomEvent.prototype = window.Event.prototype;
-    window.CustomEvent = CustomEvent; // expose definition to window
-  }
-})();
+        this.contextMenuData = contextMenuData || null;
+        this.el = el;
+        this.events = {};
+        this.eventData = {};
+        this._onEvent = this._onEvent.bind(this);
+    }
 
+    _createClass(EventListener, [{
+        key: 'destruct',
+        value: function destruct() {
+            if (this.events !== null) {
+                Object.keys(this.events).forEach(function (eventName) {
+                    var useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
+                    this.el.removeEventListener(eventName, this._onEvent, useCapture);
+                }, this);
+            }
 
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
+            this.context = null;
+            this.contextMenuData = null;
+            this.el = null;
+            this.events = null;
+            this.eventData = null;
+        }
+    }, {
+        key: 'off',
+        value: function off(eventName, selector, callback) {
+            if (typeof selector !== 'string') {
+                callback = selector;
+                selector = '';
+            }
 
-/*
- * classList.js: Cross-browser full element.classList implementation.
- * 1.1.20170427
- *
- * By Eli Grey, http://eligrey.com
- * License: Dedicated to the public domain.
- *   See https://github.com/eligrey/classList.js/blob/master/LICENSE.md
- */
+            if (callback) {
+                var events = this.events[eventName];
+                if (events) {
+                    events = events[selector];
+                    if (events) {
+                        for (var i = 0; i < events.length; i++) {
+                            if (events[i] === callback) {
+                                events.splice(i, 1);
+                                i--;
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (this.events.hasOwnProperty(eventName) && this.events[eventName].hasOwnProperty(selector)) {
+                    this.events[eventName][selector] = [];
+                }
+            }
+            return this;
+        }
+    }, {
+        key: 'on',
+        value: function on(eventName, selector, callback) {
+            var data = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
-/*global self, document, DOMException */
+            if (typeof eventName !== 'string') {
+                var eventsMap = eventName;
+                for (var key in eventsMap) {
+                    if (eventsMap.hasOwnProperty(key)) {
+                        var split = key.split(' ');
+                        if (split.length > 1) {
+                            this.on(split[0], split[1], eventsMap[key], data);
+                        } else {
+                            this.on(split[0], '', eventsMap[key], data);
+                        }
+                    }
+                }
+                return this;
+            }
 
-/*! @source http://purl.eligrey.com/github/classList.js/blob/master/classList.js */
+            if (typeof selector !== 'string') {
+                callback = selector;
+                selector = '';
+            }
 
-if ("document" in window.self) {
+            if (!this.events.hasOwnProperty(eventName)) {
+                var useCapture = NOT_CAPTURED_EVENTS.indexOf(eventName) === -1;
+                this.el.addEventListener(eventName, this._onEvent, useCapture);
 
-// Full polyfill for browsers with no classList support
-// Including IE < Edge missing SVGElement.classList
-if (!("classList" in document.createElement("_")) 
-	|| document.createElementNS && !("classList" in document.createElementNS("http://www.w3.org/2000/svg","g"))) {
+                this.events[eventName] = {};
+            }
 
-(function (view) {
+            if (!this.events[eventName].hasOwnProperty(selector)) {
+                this.events[eventName][selector] = [];
+            }
 
-"use strict";
+            if (this.events[eventName][selector].indexOf(callback) < 0) {
+                this.events[eventName][selector].push(callback);
+            }
 
-if (!('Element' in view)) return;
+            if (data) {
+                if (!this.eventData.hasOwnProperty(eventName)) {
+                    this.eventData[eventName] = {};
+                }
+                if (!this.eventData[eventName].hasOwnProperty(selector)) {
+                    this.eventData[eventName][selector] = data;
+                }
+            }
 
-var
-	  classListProp = "classList"
-	, protoProp = "prototype"
-	, elemCtrProto = view.Element[protoProp]
-	, objCtr = Object
-	, strTrim = String[protoProp].trim || function () {
-		return this.replace(/^\s+|\s+$/g, "");
-	}
-	, arrIndexOf = Array[protoProp].indexOf || function (item) {
-		var
-			  i = 0
-			, len = this.length
-		;
-		for (; i < len; i++) {
-			if (i in this && this[i] === item) {
-				return i;
-			}
-		}
-		return -1;
-	}
-	// Vendors: please allow content code to instantiate DOMExceptions
-	, DOMEx = function (type, message) {
-		this.name = type;
-		this.code = DOMException[type];
-		this.message = message;
-	}
-	, checkTokenAndGetIndex = function (classList, token) {
-		if (token === "") {
-			throw new DOMEx(
-				  "SYNTAX_ERR"
-				, "An invalid or illegal string was specified"
-			);
-		}
-		if (/\s/.test(token)) {
-			throw new DOMEx(
-				  "INVALID_CHARACTER_ERR"
-				, "String contains an invalid character"
-			);
-		}
-		return arrIndexOf.call(classList, token);
-	}
-	, ClassList = function (elem) {
-		var
-			  trimmedClasses = strTrim.call(elem.getAttribute("class") || "")
-			, classes = trimmedClasses ? trimmedClasses.split(/\s+/) : []
-			, i = 0
-			, len = classes.length
-		;
-		for (; i < len; i++) {
-			this.push(classes[i]);
-		}
-		this._updateClassName = function () {
-			elem.setAttribute("class", this.toString());
-		};
-	}
-	, classListProto = ClassList[protoProp] = []
-	, classListGetter = function () {
-		return new ClassList(this);
-	}
-;
-// Most DOMException implementations don't allow calling DOMException's toString()
-// on non-DOMExceptions. Error's toString() is sufficient here.
-DOMEx[protoProp] = Error[protoProp];
-classListProto.item = function (i) {
-	return this[i] || null;
-};
-classListProto.contains = function (token) {
-	token += "";
-	return checkTokenAndGetIndex(this, token) !== -1;
-};
-classListProto.add = function () {
-	var
-		  tokens = arguments
-		, i = 0
-		, l = tokens.length
-		, token
-		, updated = false
-	;
-	do {
-		token = tokens[i] + "";
-		if (checkTokenAndGetIndex(this, token) === -1) {
-			this.push(token);
-			updated = true;
-		}
-	}
-	while (++i < l);
+            return this;
+        }
+    }, {
+        key: '_onEvent',
+        value: function _onEvent(event) {
+            var isPropagationStopped = false;
+            var stopPropagation = event.stopPropagation;
+            event.stopPropagation = function () {
+                stopPropagation.call(event);
+                isPropagationStopped = true;
+            };
 
-	if (updated) {
-		this._updateClassName();
-	}
-};
-classListProto.remove = function () {
-	var
-		  tokens = arguments
-		, i = 0
-		, l = tokens.length
-		, token
-		, updated = false
-		, index
-	;
-	do {
-		token = tokens[i] + "";
-		index = checkTokenAndGetIndex(this, token);
-		while (index !== -1) {
-			this.splice(index, 1);
-			updated = true;
-			index = checkTokenAndGetIndex(this, token);
-		}
-	}
-	while (++i < l);
+            if (event.detail && event.detail.data) {
+                event._contextMenuData = event.detail.data;
+            } else {
+                event._contextMenuData = this.contextMenuData;
+            }
 
-	if (updated) {
-		this._updateClassName();
-	}
-};
-classListProto.toggle = function (token, force) {
-	token += "";
+            var target = event.target;
 
-	var
-		  result = this.contains(token)
-		, method = result ?
-			force !== true && "remove"
-		:
-			force !== false && "add"
-	;
+            var events = this.events[event.type.toLowerCase()];
+            var eventData = this.eventData[event.type.toLowerCase()];
 
-	if (method) {
-		this[method](token);
-	}
+            while (target && target !== this.el && isPropagationStopped === false) {
+                for (var selector in events) {
+                    if (selector && eventData && eventData.hasOwnProperty(selector) && _Helper2.default.matchesSelector(target, selector)) {
+                        event._extraContextMenuData = eventData[selector];
+                    }
 
-	if (force === true || force === false) {
-		return force;
-	} else {
-		return !result;
-	}
-};
-classListProto.toString = function () {
-	return this.join(" ");
-};
+                    if (selector && events.hasOwnProperty(selector) && _Helper2.default.matchesSelector(target, selector)) {
+                        this.context = target;
+                        EventListener.callAll(events[selector], event, this.context);
+                    }
+                }
+                target = target.parentElement;
+                if (isPropagationStopped === true) {
+                    break;
+                }
+            }
 
-if (objCtr.defineProperty) {
-	var classListPropDesc = {
-		  get: classListGetter
-		, enumerable: true
-		, configurable: true
-	};
-	try {
-		objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
-	} catch (ex) { // IE 8 doesn't support enumerable:true
-		// adding undefined to fight this issue https://github.com/eligrey/classList.js/issues/36
-		// modernie IE8-MSW7 machine has IE8 8.0.6001.18702 and is affected
-		if (ex.number === undefined || ex.number === -0x7FF5EC54) {
-			classListPropDesc.enumerable = false;
-			objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
-		}
-	}
-} else if (objCtr[protoProp].__defineGetter__) {
-	elemCtrProto.__defineGetter__(classListProp, classListGetter);
-}
+            if (isPropagationStopped === false && events.hasOwnProperty('')) {
+                EventListener.callAll(events[''], event, this.context);
+            }
+        }
+    }], [{
+        key: 'triggerEvent',
+        value: function triggerEvent(el, eventName) {
+            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+            var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+            var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
 
-}(window.self));
+            var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
+            el.dispatchEvent(event);
+            return !event.defaultPrevented;
+        }
+    }, {
+        key: 'callAll',
+        value: function callAll(callbacks, event, context) {
+            for (var i = 0; i < callbacks.length; i++) {
+                callbacks[i].call(context, event);
+            }
+        }
+    }]);
 
-}
+    return EventListener;
+}();
 
-// There is full or partial native classList support, so just check if we need
-// to normalize the add/remove and toggle APIs.
-
-(function () {
-	"use strict";
-
-	var testElement = document.createElement("_");
-
-	testElement.classList.add("c1", "c2");
-
-	// Polyfill for IE 10/11 and Firefox <26, where classList.add and
-	// classList.remove exist but support only one argument at a time.
-	if (!testElement.classList.contains("c2")) {
-		var createMethod = function(method) {
-			var original = DOMTokenList.prototype[method];
-
-			DOMTokenList.prototype[method] = function(token) {
-				var i, len = arguments.length;
-
-				for (i = 0; i < len; i++) {
-					token = arguments[i];
-					original.call(this, token);
-				}
-			};
-		};
-		createMethod('add');
-		createMethod('remove');
-	}
-
-	testElement.classList.toggle("c3", false);
-
-	// Polyfill for IE 10 and Firefox <24, where classList.toggle does not
-	// support the second argument.
-	if (testElement.classList.contains("c3")) {
-		var _toggle = DOMTokenList.prototype.toggle;
-
-		DOMTokenList.prototype.toggle = function(token, force) {
-			if (1 in arguments && !this.contains(token) === !force) {
-				return force;
-			} else {
-				return _toggle.call(this, token);
-			}
-		};
-
-	}
-
-	testElement = null;
-}());
-
-}
-
+module.exports = EventListener;
 
 /***/ }),
-/* 12 */
+
+/***/ "./src/js/classes/Helper.js":
+/*!**********************************!*\
+  !*** ./src/js/classes/Helper.js ***!
+  \**********************************/
+/*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(15);
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
-var _ContextMenu = __webpack_require__(4);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ContextMenu2 = _interopRequireDefault(_ContextMenu);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var _ItemTypes = __webpack_require__(2);
+var Helper = function () {
+    function Helper() {
+        _classCallCheck(this, Helper);
+    }
+
+    _createClass(Helper, null, [{
+        key: 'isVisible',
+        value: function isVisible(elem) {
+            return !!(elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length);
+        }
+    }, {
+        key: 'matchesSelector',
+        value: function matchesSelector(el, selector) {
+            var method = el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;
+            return method.call(el, selector);
+        }
+    }, {
+        key: 'zindex',
+        value: function zindex($t) {
+            var zin = 0;
+            var $tt = $t;
+
+            while (true) {
+                zin = Math.max(zin, parseInt($tt.css('z-index'), 10) || 0);
+                $tt = $tt.parent();
+                if (!$tt || !$tt.length || 'html body'.indexOf($tt.prop('nodeName').toLowerCase()) > -1) {
+                    break;
+                }
+            }
+            return zin;
+        }
+    }, {
+        key: 'splitAccesskey',
+        value: function splitAccesskey(val) {
+            var t = val.split(/\s+/);
+            var keys = [];
+
+            for (var i = 0, k; k = t[i]; i++) {
+                k = k.charAt(0).toUpperCase();
+                keys.push(k);
+            }
+
+            return keys;
+        }
+    }]);
+
+    return Helper;
+}();
+
+exports.default = Helper;
+
+/***/ }),
+
+/***/ "./src/js/classes/Html5Builder.js":
+/*!****************************************!*\
+  !*** ./src/js/classes/Html5Builder.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Html5Builder = function () {
+    function Html5Builder() {
+        _classCallCheck(this, Html5Builder);
+    }
+
+    _createClass(Html5Builder, [{
+        key: 'inputLabel',
+        value: function inputLabel(node) {
+            return node.id && $('label[for="' + node.id + '"]').val() || node.name;
+        }
+    }, {
+        key: 'fromMenu',
+        value: function fromMenu(element) {
+            var $this = $(element);
+            var items = {};
+
+            this.build(items, $this.children());
+
+            return items;
+        }
+    }, {
+        key: 'build',
+        value: function build(items, $children, counter) {
+            if (!counter) {
+                counter = 0;
+            }
+
+            var builder = this;
+
+            $children.each(function () {
+                var $node = $(this);
+                var node = this;
+                var nodeName = this.nodeName.toLowerCase();
+                var label = void 0;
+                var item = void 0;
+
+                if (nodeName === 'label' && $node.find('input, textarea, select').length) {
+                    label = $node.text();
+                    $node = $node.children().first();
+                    node = $node.get(0);
+                    nodeName = node.nodeName.toLowerCase();
+                }
+
+                switch (nodeName) {
+                    case 'menu':
+                        item = { name: $node.attr('label'), items: {} };
+                        counter = builder.build(item.items, $node.children(), counter);
+                        break;
+
+                    case 'a':
+                    case 'button':
+                        item = {
+                            name: $node.text(),
+                            disabled: !!$node.attr('disabled'),
+                            callback: function () {
+                                return function () {
+                                    $node.get(0).click();
+                                };
+                            }()
+                        };
+                        break;
+
+                    case 'menuitem':
+                    case 'command':
+                        switch ($node.attr('type')) {
+                            case undefined:
+                            case 'command':
+                            case 'menuitem':
+                                item = {
+                                    name: $node.attr('label'),
+                                    disabled: !!$node.attr('disabled'),
+                                    icon: $node.attr('icon'),
+                                    callback: function () {
+                                        return function () {
+                                            $node.get(0).click();
+                                        };
+                                    }()
+                                };
+                                break;
+
+                            case 'checkbox':
+                                item = {
+                                    type: 'checkbox',
+                                    disabled: !!$node.attr('disabled'),
+                                    name: $node.attr('label'),
+                                    selected: !!$node.attr('checked')
+                                };
+                                break;
+                            case 'radio':
+                                item = {
+                                    type: 'radio',
+                                    disabled: !!$node.attr('disabled'),
+                                    name: $node.attr('label'),
+                                    radio: $node.attr('radiogroup'),
+                                    value: $node.attr('id'),
+                                    selected: !!$node.attr('checked')
+                                };
+                                break;
+
+                            default:
+                                item = undefined;
+                        }
+                        break;
+
+                    case 'hr':
+                        item = '-------';
+                        break;
+
+                    case 'input':
+                        switch ($node.attr('type')) {
+                            case 'text':
+                                item = {
+                                    type: 'text',
+                                    name: label || builder.inputLabel(node),
+                                    disabled: !!$node.attr('disabled'),
+                                    value: $node.val()
+                                };
+                                break;
+
+                            case 'checkbox':
+                                item = {
+                                    type: 'checkbox',
+                                    name: label || builder.inputLabel(node),
+                                    disabled: !!$node.attr('disabled'),
+                                    selected: !!$node.attr('checked')
+                                };
+                                break;
+
+                            case 'radio':
+                                item = {
+                                    type: 'radio',
+                                    name: label || builder.inputLabel(node),
+                                    disabled: !!$node.attr('disabled'),
+                                    radio: !!$node.attr('name'),
+                                    value: $node.val(),
+                                    selected: !!$node.attr('checked')
+                                };
+                                break;
+
+                            default:
+                                item = undefined;
+                                break;
+                        }
+                        break;
+
+                    case 'select':
+                        item = {
+                            type: 'select',
+                            name: label || builder.inputLabel(node),
+                            disabled: !!$node.attr('disabled'),
+                            selected: $node.val(),
+                            options: {}
+                        };
+                        $node.children().each(function () {
+                            item.options[this.value] = $(this).text();
+                        });
+                        break;
+
+                    case 'textarea':
+                        item = {
+                            type: 'textarea',
+                            name: label || builder.inputLabel(node),
+                            disabled: !!$node.attr('disabled'),
+                            value: $node.val()
+                        };
+                        break;
+
+                    case 'label':
+                        break;
+
+                    default:
+                        item = { type: 'html', html: $node.clone(true) };
+                        break;
+                }
+
+                if (item) {
+                    counter++;
+                    items['key' + counter] = item;
+                }
+            });
+
+            return counter;
+        }
+    }]);
+
+    return Html5Builder;
+}();
+
+exports.default = Html5Builder;
+
+/***/ }),
+
+/***/ "./src/js/classes/ItemTypes.js":
+/*!*************************************!*\
+  !*** ./src/js/classes/ItemTypes.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var ItemTypes = {
+  simple: '',
+
+  text: 'text',
+
+  textarea: 'textarea',
+
+  checkbox: 'checkbox',
+
+  radio: 'radio',
+
+  select: 'select',
+
+  html: 'html',
+
+  separator: 'cm_separator',
+
+  submenu: 'sub'
+};
+
+exports.default = ItemTypes;
+
+/***/ }),
+
+/***/ "./src/js/classes/Operations.js":
+/*!**************************************!*\
+  !*** ./src/js/classes/Operations.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Helper = __webpack_require__(/*! ./Helper */ "./src/js/classes/Helper.js");
+
+var _Helper2 = _interopRequireDefault(_Helper);
+
+var _ItemTypes = __webpack_require__(/*! ./ItemTypes */ "./src/js/classes/ItemTypes.js");
 
 var _ItemTypes2 = _interopRequireDefault(_ItemTypes);
 
-var _contextMenu = __webpack_require__(13);
+var _EventListener = __webpack_require__(/*! ./EventListener */ "./src/js/classes/EventListener.js");
+
+var _EventListener2 = _interopRequireDefault(_EventListener);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Operations = function () {
+    function Operations() {
+        _classCallCheck(this, Operations);
+
+        return this;
+    }
+
+    _createClass(Operations, [{
+        key: 'show',
+        value: function show(e, menuData, x, y) {
+            var $trigger = $(e.target);
+            var css = {};
+
+            var layer = document.getElementById('#context-menu-layer');
+            if (layer) {
+                _EventListener2.default.triggerEvent(document.getElementById('#context-menu-layer'), 'mousedown');
+            }
+
+            menuData.$trigger = $trigger;
+
+            if (menuData.events.show.call($trigger, e, menuData) === false) {
+                menuData.manager.handler.$currentTrigger = null;
+                return;
+            }
+
+            var hasVisibleItems = menuData.manager.operations.update.call($trigger, e, menuData);
+
+            if (hasVisibleItems === false) {
+                menuData.manager.handler.$currentTrigger = null;
+                return;
+            }
+
+            menuData.position.call($trigger, e, menuData, x, y);
+
+            if (menuData.zIndex) {
+                var additionalZValue = menuData.zIndex;
+
+                if (typeof menuData.zIndex === 'function') {
+                    additionalZValue = menuData.zIndex.call($trigger, menuData);
+                }
+                css.zIndex = _Helper2.default.zindex($trigger) + additionalZValue;
+            }
+
+            menuData.manager.operations.layer.call(menuData.$menu, e, menuData, css.zIndex);
+
+            menuData.$menu.find('ul').css('zIndex', css.zIndex + 1);
+
+            menuData.$menu.css(css)[menuData.animation.show](menuData.animation.duration, function () {
+                _EventListener2.default.triggerEvent($trigger.get(0), 'contextmenu:visible');
+
+                menuData.manager.operations.activated(e, menuData);
+                menuData.events.activated($trigger, e, menuData);
+            });
+
+            $trigger.data('contextMenu', menuData).addClass('context-menu-active');
+
+            menuData.listeners.baseElement.off('keydown').on('keydown', menuData.manager.handler.key);
+
+            if (menuData.autoHide) {
+                menuData.listeners.contextMenuAutoHide.on('mousemove', function (e) {
+                    var pos = $trigger.offset();
+                    pos.right = pos.left + $trigger.outerWidth();
+                    pos.bottom = pos.top + $trigger.outerHeight();
+
+                    if (menuData.$layer && !menuData.hovering && (!(e.pageX >= pos.left && e.pageX <= pos.right) || !(e.pageY >= pos.top && e.pageY <= pos.bottom))) {
+                        setTimeout(function () {
+                            if (!menuData.hovering && menuData.$menu !== null && typeof menuData.$menu !== 'undefined') {
+                                _EventListener2.default.triggerEvent(menuData.$menu.get(0), 'contextmenu:hide');
+                            }
+                        }, 50);
+                    }
+                });
+            }
+        }
+    }, {
+        key: 'hide',
+        value: function hide(e, menuData, force) {
+            var $trigger = $(this);
+            if ((typeof menuData === 'undefined' ? 'undefined' : _typeof(menuData)) !== 'object' && $trigger.data('contextMenu')) {
+                menuData = $trigger.data('contextMenu');
+            } else if ((typeof menuData === 'undefined' ? 'undefined' : _typeof(menuData)) !== 'object') {
+                return;
+            }
+
+            if (!force && menuData.events && menuData.events.hide.call($trigger, e, menuData) === false) {
+                return;
+            }
+
+            $trigger.removeData('contextMenu').removeClass('context-menu-active');
+
+            if (menuData.$layer) {
+                setTimeout(function ($layer) {
+                    return function () {
+                        $layer.remove();
+                    };
+                }(menuData.$layer), 10);
+
+                try {
+                    delete menuData.$layer;
+                } catch (e) {
+                    menuData.$layer = null;
+                }
+            }
+
+            menuData.manager.handler.$currentTrigger = null;
+
+            menuData.$menu.find('.' + menuData.classNames.hover).trigger('contextmenu:blur');
+            menuData.$selected = null;
+
+            menuData.$menu.find('.' + menuData.classNames.visible).removeClass(menuData.classNames.visible);
+
+            if (menuData.listeners.contextMenuAutoHide) {
+                menuData.listeners.contextMenuAutoHide.destruct();
+            }
+            menuData.listeners.baseElement.off('keydown');
+
+            if (menuData.$menu) {
+                menuData.$menu[menuData.animation.hide](menuData.animation.duration, function () {
+                    if (menuData.build) {
+                        menuData.$menu.remove();
+                        Object.keys(menuData).forEach(function (key) {
+                            switch (key) {
+                                case 'ns':
+                                case 'selector':
+                                case 'build':
+                                case 'trigger':
+                                    return true;
+                                default:
+                                    menuData[key] = undefined;
+                                    try {
+                                        delete menuData[key];
+                                    } catch (e) {}
+                                    return true;
+                            }
+                        });
+                    }
+
+                    setTimeout(function () {
+                        _EventListener2.default.triggerEvent($trigger.get(0), 'contextmenu:hidden');
+                    }, 10);
+                });
+            }
+        }
+    }, {
+        key: 'create',
+        value: function create(e, currentMenuData, rootMenuData) {
+            var _this = this;
+
+            if (typeof rootMenuData === 'undefined') {
+                rootMenuData = currentMenuData;
+            }
+
+            var menuElement = document.createElement('ul');
+            menuElement.className = 'context-menu-list ' + (currentMenuData.className || '');
+
+            currentMenuData.menuElement = menuElement;
+            menuElement.contextMenu = currentMenuData;
+            menuElement.contextMenuRoot = currentMenuData;
+
+            currentMenuData.$menu = $(menuElement).addClass(currentMenuData.className || '').data({
+                'contextMenu': currentMenuData,
+                'contextMenuRoot': rootMenuData
+            });
+
+            ['callbacks', 'commands', 'inputs'].forEach(function (k) {
+                currentMenuData[k] = {};
+                if (!rootMenuData[k]) {
+                    rootMenuData[k] = {};
+                }
+            });
+
+            if (!rootMenuData.accesskeys) {
+                rootMenuData.accesskeys = {};
+            }
+
+            function createNameNode(item) {
+                var $name = $('<span></span>');
+                if (item._accesskey) {
+                    if (item._beforeAccesskey) {
+                        $name.append(document.createTextNode(item._beforeAccesskey));
+                    }
+                    $('<span></span>').addClass('context-menu-accesskey').text(item._accesskey).appendTo($name);
+                    if (item._afterAccesskey) {
+                        $name.append(document.createTextNode(item._afterAccesskey));
+                    }
+                } else {
+                    if (item.isHtmlName) {
+                        if (typeof item.accesskey !== 'undefined') {
+                            throw new Error('accesskeys are not compatible with HTML names and cannot be used together in the same item');
+                        }
+                        $name.html(item.name);
+                    } else {
+                        $name.text(item.name);
+                    }
+                }
+                return $name;
+            }
+
+            Object.keys(currentMenuData.items).forEach(function (key) {
+                var item = currentMenuData.items[key];
+                var $t = $('<li class="context-menu-item"></li>').addClass(item.className || '');
+                var $label = null;
+                var $input = null;
+
+                $t.on('click', $.noop);
+
+                if (typeof item === 'string' || item.type === 'cm_seperator') {
+                    item = { type: _ItemTypes2.default.separator };
+                }
+
+                item.$node = $t.data({
+                    'contextMenu': currentMenuData,
+                    'contextMenuRoot': rootMenuData,
+                    'contextMenuKey': key
+                });
+
+                if (typeof item.listeners === 'undefined') {
+                    item.listeners = {};
+                }
+
+                if (typeof item.accesskey !== 'undefined') {
+                    var aks = _Helper2.default.splitAccesskey(item.accesskey);
+                    for (var i = 0, ak; ak = aks[i]; i++) {
+                        if (!rootMenuData.accesskeys[ak]) {
+                            rootMenuData.accesskeys[ak] = item;
+                            var matched = item.name.match(new RegExp('^(.*?)(' + ak + ')(.*)$', 'i'));
+                            if (matched) {
+                                item._beforeAccesskey = matched[1];
+                                item._accesskey = matched[2];
+                                item._afterAccesskey = matched[3];
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (item.type && rootMenuData.types[item.type]) {
+                    rootMenuData.types[item.type].call($t, e, item, currentMenuData, rootMenuData);
+
+                    [currentMenuData, rootMenuData].forEach(function (k) {
+                        k.commands[key] = item;
+
+                        if (typeof item.callback === 'function' && (typeof k.callbacks[key] === 'undefined' || typeof currentMenuData.type === 'undefined')) {
+                            k.callbacks[key] = item.callback;
+                        }
+                    });
+                } else {
+                    if (item.type === _ItemTypes2.default.separator) {
+                        $t.addClass('context-menu-separator ' + rootMenuData.classNames.notSelectable);
+                    } else if (item.type === _ItemTypes2.default.html) {
+                        $t.addClass('context-menu-html ' + rootMenuData.classNames.notSelectable);
+                    } else if (item.type && item.type !== _ItemTypes2.default.submenu) {
+                        $label = $('<label></label>').appendTo($t);
+                        createNameNode(item).appendTo($label);
+
+                        $t.addClass('context-menu-input');
+                        currentMenuData.hasTypes = true;
+                        [currentMenuData, rootMenuData].forEach(function (k) {
+                            k.commands[key] = item;
+                            k.inputs[key] = item;
+                        });
+                    } else if (item.items) {
+                        item.type = _ItemTypes2.default.submenu;
+                    }
+
+                    switch (item.type) {
+                        case _ItemTypes2.default.separator:
+                            break;
+
+                        case _ItemTypes2.default.text:
+                            $input = $('<input type="text" value="1" name="" />').attr('name', 'context-menu-input-' + key).val(item.value || '').appendTo($label);
+                            break;
+
+                        case _ItemTypes2.default.textarea:
+                            $input = $('<textarea name=""></textarea>').attr('name', 'context-menu-input-' + key).val(item.value || '').appendTo($label);
+
+                            if (item.height) {
+                                $input.height(item.height);
+                            }
+                            break;
+
+                        case _ItemTypes2.default.checkbox:
+                            $input = $('<input type="checkbox" value="1" name="" />').attr('name', 'context-menu-input-' + key).val(item.value || '').prop('checked', !!item.selected).prependTo($label);
+                            break;
+
+                        case _ItemTypes2.default.radio:
+                            $input = $('<input type="radio" value="1" name="" />').attr('name', 'context-menu-input-' + item.radio).val(item.value || '').prop('checked', !!item.selected).prependTo($label);
+                            break;
+
+                        case _ItemTypes2.default.select:
+                            $input = $('<select name=""></select>').attr('name', 'context-menu-input-' + key).appendTo($label);
+                            if (item.options) {
+                                Object.keys(item.options).forEach(function (value) {
+                                    $('<option></option>').val(value).text(item.options[value]).appendTo($input);
+                                });
+                                $input.val(item.selected);
+                            }
+                            break;
+
+                        case _ItemTypes2.default.submenu:
+                            createNameNode(item).appendTo($t);
+                            $t.addClass('item-submenu-' + item.name.replace(/\s+/g, '-').toLowerCase());
+                            item.appendTo = item.$node;
+                            $t.data('contextMenu', item).addClass('context-menu-submenu');
+
+                            item.callback = null;
+
+                            if (typeof item.items.then === 'function') {
+                                rootMenuData.manager.operations.processPromises(e, item, rootMenuData, item.items);
+                            } else {
+                                rootMenuData.manager.operations.create(e, item, rootMenuData);
+                            }
+                            break;
+
+                        case _ItemTypes2.default.html:
+                            $(item.html).appendTo($t);
+                            break;
+
+                        default:
+                            [currentMenuData, rootMenuData].forEach(function (k) {
+                                k.commands[key] = item;
+
+                                if (typeof item.callback === 'function' && (typeof k.callbacks[key] === 'undefined' || typeof currentMenuData.type === 'undefined')) {
+                                    k.callbacks[key] = item.callback;
+                                }
+                            });
+                            createNameNode(item).appendTo($t);
+                            $t.addClass('item-command-' + item.name.replace(/\s+/g, '-').toLowerCase());
+                            break;
+                    }
+
+                    if (item.type && item.type !== _ItemTypes2.default.submenu && item.type !== _ItemTypes2.default.html && item.type !== _ItemTypes2.default.separator) {
+                        item.listeners.input = new _EventListener2.default($input.get(0), rootMenuData);
+                        item.listeners.input.on('focus', rootMenuData.manager.handler.focusInput).on('blur', rootMenuData.manager.handler.blurInput);
+
+                        if (item.events) {
+                            item.listeners.input.on(item.events, currentMenuData);
+                        }
+                    }
+
+                    if (item.icon) {
+                        if (typeof item.icon === 'function') {
+                            item._icon = item.icon.call(_this, e, $t, key, item, currentMenuData, rootMenuData);
+                        } else {
+                            if (typeof item.icon === 'string' && item.icon.substring(0, 3) === 'fa-') {
+                                item._icon = rootMenuData.classNames.icon + ' ' + rootMenuData.classNames.icon + '--fa fa ' + item.icon;
+                            } else {
+                                item._icon = rootMenuData.classNames.icon + ' ' + rootMenuData.classNames.icon + '-' + item.icon;
+                            }
+                        }
+                        $t.addClass(item._icon);
+                    }
+                }
+
+                item.$input = $input;
+                item.$label = $label;
+
+                $t.appendTo(currentMenuData.$menu);
+
+                if (!currentMenuData.hasTypes && $.support.eventSelectstart) {
+                    $t.on('selectstart.disableTextSelect', currentMenuData.manager.handler.abortevent);
+                }
+            });
+
+            if (!currentMenuData.$node) {
+                currentMenuData.$menu.css('display', 'none').addClass('context-menu-root');
+            }
+            currentMenuData.$menu.appendTo(currentMenuData.appendTo || document.body);
+        }
+    }, {
+        key: 'resize',
+        value: function resize(e, $menu, nested) {
+            var domMenu = void 0;
+
+            $menu.css({ position: 'absolute', display: 'block' });
+
+            $menu.data('width', (domMenu = $menu.get(0)).getBoundingClientRect ? Math.ceil(domMenu.getBoundingClientRect().width) : $menu.outerWidth() + 1);
+            $menu.css({
+                position: 'static',
+                minWidth: '0px',
+                maxWidth: '100000px'
+            });
+
+            $menu.find('> li > ul').each(function (index, element) {
+                e._contextMenuData.manager.operations.resize(e, $(element), true);
+            });
+
+            if (!nested) {
+                $menu.find('ul').addBack().css({
+                    position: '',
+                    display: '',
+                    minWidth: '',
+                    maxWidth: ''
+                }).outerWidth(function () {
+                    return $(this).data('width');
+                });
+            }
+        }
+    }, {
+        key: 'update',
+        value: function update(e, currentMenuData, rootMenuData) {
+            var $trigger = this;
+            if (typeof rootMenuData === 'undefined') {
+                rootMenuData = currentMenuData;
+                rootMenuData.manager.operations.resize(e, currentMenuData.$menu);
+            }
+
+            var hasVisibleItems = false;
+
+            currentMenuData.$menu.children().each(function (index, element) {
+                var $item = $(element);
+                var key = $item.data('contextMenuKey');
+                var item = currentMenuData.items[key];
+
+                var disabled = typeof item.disabled === 'function' && item.disabled.call($trigger, e, key, currentMenuData, rootMenuData) || item.disabled === true;
+                var visible = void 0;
+
+                if (typeof item.visible === 'function') {
+                    visible = item.visible.call($trigger, e, key, currentMenuData, rootMenuData);
+                } else if (typeof item.visible !== 'undefined') {
+                    visible = item.visible === true;
+                } else {
+                    visible = true;
+                }
+
+                if (visible) {
+                    hasVisibleItems = true;
+                }
+
+                $item[visible ? 'show' : 'hide']();
+
+                $item[disabled ? 'addClass' : 'removeClass'](rootMenuData.classNames.disabled);
+
+                if (typeof item.icon === 'function') {
+                    $item.removeClass(item._icon);
+                    item._icon = item.icon.call($trigger, e, $item, key, item, currentMenuData, rootMenuData);
+                    $item.addClass(item._icon);
+                }
+
+                if (item.type) {
+                    $item.find('input, select, textarea').prop('disabled', disabled);
+
+                    switch (item.type) {
+                        case _ItemTypes2.default.text:
+                        case _ItemTypes2.default.textarea:
+                            item.$input.val(item.value || '');
+                            break;
+
+                        case _ItemTypes2.default.checkbox:
+                        case _ItemTypes2.default.radio:
+                            item.$input.val(item.value || '').prop('checked', !!item.selected);
+                            break;
+
+                        case _ItemTypes2.default.select:
+                            item.$input.val((item.selected === 0 ? '0' : item.selected) || '');
+                            break;
+                    }
+                }
+
+                if (item.$menu) {
+                    var subMenuHasVisibleItems = rootMenuData.manager.operations.update.call($trigger, e, item, rootMenuData);
+                    if (subMenuHasVisibleItems) {
+                        hasVisibleItems = true;
+                    }
+                }
+            });
+
+            return hasVisibleItems;
+        }
+    }, {
+        key: 'layer',
+        value: function layer(e, menuData, zIndex) {
+            var $window = $(window);
+
+            var $layer = menuData.$layer = $('<div id="context-menu-layer"></div>').css({
+                height: $window.height(),
+                width: $window.width(),
+                display: 'block',
+                position: 'fixed',
+                'z-index': zIndex,
+                top: 0,
+                left: 0,
+                opacity: 0,
+                filter: 'alpha(opacity=0)',
+                'background-color': '#000'
+            }).data('contextMenuRoot', menuData).insertBefore(this);
+
+            menuData.listeners.layer = new _EventListener2.default($layer.get(0), menuData);
+            menuData.listeners.layer.on('contextmenu', menuData.manager.handler.abortevent).on('mousedown', menuData.manager.handler.layerClick);
+
+            if (typeof document.body.style.maxWidth === 'undefined') {
+                $layer.css({
+                    'position': 'absolute',
+                    'height': $(document).height()
+                });
+            }
+
+            return $layer;
+        }
+    }, {
+        key: 'processPromises',
+        value: function processPromises(e, currentMenuData, rootMenuData, promise) {
+            currentMenuData.$node.addClass(rootMenuData.classNames.iconLoadingClass);
+
+            function finishPromiseProcess(currentMenuData, rootMenuData, items) {
+                if (typeof rootMenuData.$menu === 'undefined' || !rootMenuData.$menu.is(':visible')) {
+                    return;
+                }
+                currentMenuData.$node.removeClass(rootMenuData.classNames.iconLoadingClass);
+                currentMenuData.items = items;
+                rootMenuData.manager.operations.create(e, currentMenuData, rootMenuData);
+                rootMenuData.manager.operations.update(e, currentMenuData, rootMenuData);
+                rootMenuData.positionSubmenu.call(currentMenuData.$node, e, currentMenuData.$menu);
+            }
+
+            function errorPromise(currentMenuData, rootMenuData, errorItem) {
+                if (typeof errorItem === 'undefined') {
+                    errorItem = {
+                        'error': {
+                            name: 'No items and no error item',
+                            icon: 'context-menu-icon context-menu-icon-quit'
+                        }
+                    };
+                    if (window.console) {
+                        (console.error || console.log).call(console, 'When you reject a promise, provide an "items" object, equal to normal sub-menu items');
+                    }
+                } else if (typeof errorItem === 'string') {
+                    errorItem = { 'error': { name: errorItem } };
+                }
+                finishPromiseProcess(currentMenuData, rootMenuData, errorItem);
+            }
+
+            function completedPromise(currentMenuData, rootMenuData, items) {
+                if (typeof items === 'undefined') {
+                    errorPromise(undefined);
+                }
+                finishPromiseProcess(currentMenuData, rootMenuData, items);
+            }
+
+            promise.then(completedPromise.bind(this, currentMenuData, rootMenuData), errorPromise.bind(this, currentMenuData, rootMenuData));
+        }
+    }, {
+        key: 'activated',
+        value: function activated(e, menuData) {
+            var $menu = menuData.$menu;
+            var $menuOffset = $menu.offset();
+            var winHeight = $(window).height();
+            var winScrollTop = $(window).scrollTop();
+            var menuHeight = $menu.height();
+            if (menuHeight > winHeight) {
+                $menu.css({
+                    'height': winHeight + 'px',
+                    'overflow-x': 'hidden',
+                    'overflow-y': 'auto',
+                    'top': winScrollTop + 'px'
+                });
+            } else if ($menuOffset.top < winScrollTop || $menuOffset.top + menuHeight > winScrollTop + winHeight) {
+                $menu.css({
+                    'top': '0px'
+                });
+            }
+        }
+    }]);
+
+    return Operations;
+}();
+
+exports.default = Operations;
+;
+
+/***/ }),
+
+/***/ "./src/js/defaults/index.js":
+/*!**********************************!*\
+  !*** ./src/js/defaults/index.js ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _position = __webpack_require__(/*! ./position */ "./src/js/defaults/position.js");
+
+exports.default = {
+
+    baseElement: document,
+
+    selector: null,
+
+    appendTo: null,
+
+    trigger: 'right',
+
+    autoHide: false,
+
+    delay: 200,
+
+    reposition: true,
+
+    hideOnSecondTrigger: false,
+
+    selectableSubMenu: false,
+
+    className: '',
+
+    classNames: {
+        hover: 'context-menu-hover',
+        disabled: 'context-menu-disabled',
+        visible: 'context-menu-visible',
+        notSelectable: 'context-menu-not-selectable',
+
+        icon: 'context-menu-icon',
+        iconEdit: 'context-menu-icon-edit',
+        iconCut: 'context-menu-icon-cut',
+        iconCopy: 'context-menu-icon-copy',
+        iconPaste: 'context-menu-icon-paste',
+        iconDelete: 'context-menu-icon-delete',
+        iconAdd: 'context-menu-icon-add',
+        iconQuit: 'context-menu-icon-quit',
+        iconLoadingClass: 'context-menu-icon-loading'
+    },
+
+    zIndex: 1,
+
+    animation: {
+        duration: 50,
+        show: 'slideDown',
+        hide: 'slideUp'
+    },
+
+    events: {
+        show: $.noop,
+        hide: $.noop,
+        activated: $.noop
+    },
+
+    callback: null,
+
+    items: {},
+
+    build: false,
+
+    types: {},
+
+    determinePosition: _position.determinePosition,
+
+    position: _position.position,
+
+    positionSubmenu: _position.positionSubmenu
+};
+
+/***/ }),
+
+/***/ "./src/js/defaults/position.js":
+/*!*************************************!*\
+  !*** ./src/js/defaults/position.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.determinePosition = determinePosition;
+exports.position = position;
+exports.positionSubmenu = positionSubmenu;
+function determinePosition($menu) {
+    if ($.ui && $.ui.position) {
+        $menu.css('display', 'block').position({
+            my: 'center top',
+            at: 'center bottom',
+            of: this,
+            offset: '0 5',
+            collision: 'fit'
+        }).css('display', 'none');
+    } else {
+        var offset = this.offset();
+        offset.top += this.outerHeight();
+        offset.left += this.outerWidth() / 2 - $menu.outerWidth() / 2;
+        $menu.css(offset);
+    }
+}
+
+function position(e, currentMenuData, x, y) {
+    var $window = $(window);
+    var offset = void 0;
+
+    if (!x && !y) {
+        currentMenuData.determinePosition.call(this, currentMenuData.$menu);
+        return;
+    } else if (x === 'maintain' && y === 'maintain') {
+        offset = currentMenuData.$menu.position();
+    } else {
+        var offsetParentOffset = currentMenuData.$menu.offsetParent().offset();
+        offset = { top: y - offsetParentOffset.top, left: x - offsetParentOffset.left };
+    }
+
+    var bottom = $window.scrollTop() + $window.height();
+    var right = $window.scrollLeft() + $window.width();
+    var height = currentMenuData.$menu.outerHeight();
+    var width = currentMenuData.$menu.outerWidth();
+
+    if (offset.top + height > bottom) {
+        offset.top -= height;
+    }
+
+    if (offset.top < 0) {
+        offset.top = 0;
+    }
+
+    if (offset.left + width > right) {
+        offset.left -= width;
+    }
+
+    if (offset.left < 0) {
+        offset.left = 0;
+    }
+
+    currentMenuData.$menu.css(offset);
+}
+
+function positionSubmenu(e, $menu) {
+    if (typeof $menu === 'undefined') {
+        return;
+    }
+    if ($.ui && $.ui.position) {
+        $menu.css('display', 'block').position({
+            my: 'left top-5',
+            at: 'right top',
+            of: this,
+            collision: 'flipfit fit'
+        }).css('display', '');
+    } else {
+        var offset = {
+            top: -9,
+            left: this.outerWidth() - 5
+        };
+        $menu.css(offset);
+    }
+}
+
+/***/ }),
+
+/***/ "./src/js/jquery.contextmenu.js":
+/*!**************************************!*\
+  !*** ./src/js/jquery.contextmenu.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(/*! ../sass/jquery.contextMenu.scss */ "./src/sass/jquery.contextMenu.scss");
+
+var _ContextMenu = __webpack_require__(/*! ./classes/ContextMenu */ "./src/js/classes/ContextMenu.js");
+
+var _ContextMenu2 = _interopRequireDefault(_ContextMenu);
+
+var _ItemTypes = __webpack_require__(/*! ./classes/ItemTypes */ "./src/js/classes/ItemTypes.js");
+
+var _ItemTypes2 = _interopRequireDefault(_ItemTypes);
+
+var _contextMenu = __webpack_require__(/*! ./jquery/contextMenu */ "./src/js/jquery/contextMenu.js");
 
 var _contextMenu2 = _interopRequireDefault(_contextMenu);
 
-__webpack_require__(9);
+__webpack_require__(/*! ./polyfills/element-matches */ "./src/js/polyfills/element-matches.js");
 
-__webpack_require__(10);
+__webpack_require__(/*! custom-event-polyfill */ "./node_modules/custom-event-polyfill/polyfill.js");
 
-__webpack_require__(11);
+__webpack_require__(/*! classlist-polyfill */ "./node_modules/classlist-polyfill/src/index.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2827,7 +2877,12 @@ $.contextMenu = contextMenu;
 module.exports = { ContextMenu: _ContextMenu2.default, ContextMenuItemTypes: _ItemTypes2.default };
 
 /***/ }),
-/* 13 */
+
+/***/ "./src/js/jquery/contextMenu.js":
+/*!**************************************!*\
+  !*** ./src/js/jquery/contextMenu.js ***!
+  \**************************************/
+/*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2881,18 +2936,39 @@ exports.default = function (operation) {
     return this;
 };
 
-var _EventListener = __webpack_require__(0);
+var _EventListener = __webpack_require__(/*! ../classes/EventListener */ "./src/js/classes/EventListener.js");
 
 var _EventListener2 = _interopRequireDefault(_EventListener);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ }),
-/* 14 */,
-/* 15 */
+
+/***/ "./src/js/polyfills/element-matches.js":
+/*!*********************************************!*\
+  !*** ./src/js/polyfills/element-matches.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+if (!Element.prototype.matches) {
+    Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+}
+
+/***/ }),
+
+/***/ "./src/sass/jquery.contextMenu.scss":
+/*!******************************************!*\
+  !*** ./src/sass/jquery.contextMenu.scss ***!
+  \******************************************/
+/*! no static exports found */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ })
-/******/ ]);
+
+/******/ });
