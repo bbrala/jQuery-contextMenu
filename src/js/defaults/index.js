@@ -7,6 +7,7 @@ import {determinePosition, positionSubmenu, position} from './position';
  * @interface
  *
  * @property {JQuery} $menu - The menu element for this menu part. Eg. the root menu, or a single submenu.
+ * @property {HTMLElement} menuElement - The menu element for this menu part. Eg. the root menu, or a single submenu.
  * @property {JQuery} $layer - The opened layer when the menu is opened.
  * @property {JQuery} $node - The menu node.
  * @property {JQuery} $trigger - The element that triggered opening the menu.
@@ -49,12 +50,13 @@ import {determinePosition, positionSubmenu, position} from './position';
 
  * @property {null|string} selector - Selector on which the contextMenu triggers.
  * @property {Object.<string, ContextMenuItem>} items - Object with items to be listed in contextMenu. See {@link ContextMenuItem} for a full documentation on how to build your menu items.
- * @property {JQuery.Selector|DOMElement} [appendTo=document.body] - Specifies the selector `string` or `DOMElement` the generated menu is to be appended to.
+ * @property {JQuery.Selector|HTMLElement} [appendTo=document.body] - Specifies the selector `string` or `HTMLElement` the generated menu is to be appended to.
  * @property {('right'|'left'|'hover'|'touchstart'|'none')} trigger=left - Method to trigger context menu ["right", "left", "hover", "touchstart", "none"].
  * @property {?string} itemClickEvent - Allows the selection of the click event instead of the mouseup event to handle the user mouse interaction with the contexMenu. The default event is `mouseup`. Set the option to `"click"` to change to the `click` event.
 
  This option is global: the first contexMenu registered sets it. To change it afterwards all the contextMenu have to be unregistered with `$.contextMenu( 'destroy' );` before the change has effect again.
 
+ * @property {HTMLElement} baseElement - The base element which should listen to events, by default this is `document`.
  * @property {boolean} hideOnSecondTrigger=false - Flag denoting if a second trigger should close the menu, as long as the trigger happened on one of the trigger-element's child nodes. This overrides the reposition option.
  * @property {boolean} selectableSubMenu=false - Ability to select ContextMenuItem containing a submenu.
  * @property {boolean} reposition=true - flag denoting if a second trigger should simply move (`true`) or rebuild (`false`) an open menu as long as the trigger happened on one of the trigger-element's child nodes
@@ -97,6 +99,9 @@ import {determinePosition, positionSubmenu, position} from './position';
  * @property {boolean} _hasContext - Set to true if the call was done from an element.
  */
 export default {
+
+    baseElement: document,
+
     selector: null,
 
     // where to append the menu to

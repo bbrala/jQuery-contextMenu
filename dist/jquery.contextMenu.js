@@ -87,6 +87,72 @@ var ContextMenu =
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/custom-event-polyfill/polyfill.js":
+/*!********************************************************!*\
+  !*** ./node_modules/custom-event-polyfill/polyfill.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// Polyfill for creating CustomEvents on IE9/10/11
+
+// code pulled from:
+// https://github.com/d4tocchini/customevent-polyfill
+// https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent#Polyfill
+
+(function() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    var ce = new window.CustomEvent('test', { cancelable: true });
+    ce.preventDefault();
+    if (ce.defaultPrevented !== true) {
+      // IE has problems with .preventDefault() on custom events
+      // http://stackoverflow.com/questions/23349191
+      throw new Error('Could not prevent default');
+    }
+  } catch (e) {
+    var CustomEvent = function(event, params) {
+      var evt, origPrevent;
+      params = params || {
+        bubbles: false,
+        cancelable: false,
+        detail: undefined
+      };
+
+      evt = document.createEvent('CustomEvent');
+      evt.initCustomEvent(
+        event,
+        params.bubbles,
+        params.cancelable,
+        params.detail
+      );
+      origPrevent = evt.preventDefault;
+      evt.preventDefault = function() {
+        origPrevent.call(this);
+        try {
+          Object.defineProperty(this, 'defaultPrevented', {
+            get: function() {
+              return true;
+            }
+          });
+        } catch (e) {
+          this.defaultPrevented = true;
+        }
+      };
+      return evt;
+    };
+
+    CustomEvent.prototype = window.Event.prototype;
+    window.CustomEvent = CustomEvent; // expose definition to window
+  }
+})();
+
+
+/***/ }),
+
 /***/ "./src/js/classes/ContextMenu.js":
 /*!***************************************!*\
   !*** ./src/js/classes/ContextMenu.js ***!
@@ -440,6 +506,17 @@ var ContextMenu = function () {
             return data;
         }
     }, {
+        key: 'triggerEvent',
+        value: function triggerEvent(el, eventName) {
+            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+            var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+            var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+
+            var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
+            el.dispatchEvent(event);
+            return !event.defaultPrevented;
+        }
+    }, {
         key: 'getVisibleMenus',
         value: function getVisibleMenus() {
             return Array.prototype.filter.call(document.querySelectorAll('.context-menu-list'), function (element) {
@@ -470,17 +547,6 @@ var ContextMenu = function () {
             return Object.values(this.menus).find(function (menu) {
                 return menu.selector === selector;
             });
-        }
-    }], [{
-        key: 'triggerEvent',
-        value: function triggerEvent(el, eventName) {
-            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-            var bubbles = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
-            var cancelable = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
-
-            var event = new CustomEvent(eventName, { detail: data, bubbles: bubbles, cancelable: cancelable });
-            el.dispatchEvent(event);
-            return !event.defaultPrevented;
         }
     }]);
 
@@ -1051,6 +1117,7 @@ var EventHandler = function () {
     }, {
         key: 'itemMouseenter',
         value: function itemMouseenter(e) {
+            console.log('itemmouseenter');
             var $this = $(this);
             var data = $this.data();
             var currentMenuData = data.contextMenu;
@@ -1069,7 +1136,7 @@ var EventHandler = function () {
             }
 
             e.stopPropagation();
-            _EventListener2.default.triggerEvent(this, 'contextmenu:focus', { data: currentMenuData, originalEvent: e }, false);
+            _EventListener2.default.triggerEvent(this, 'contextmenu:focus', { data: currentMenuData, originalEvent: e }, true);
         }
     }, {
         key: 'itemMouseleave',
@@ -1897,7 +1964,14 @@ var Operations = function () {
                 rootMenuData = currentMenuData;
             }
 
-            currentMenuData.$menu = $('<ul class="context-menu-list"></ul>').addClass(currentMenuData.className || '').data({
+            var menuElement = document.createElement('ul');
+            menuElement.className = 'context-menu-list ' + (currentMenuData.className || '');
+
+            currentMenuData.menuElement = menuElement;
+            menuElement.contextMenu = currentMenuData;
+            menuElement.contextMenuRoot = currentMenuData;
+
+            currentMenuData.$menu = $(menuElement).addClass(currentMenuData.className || '').data({
                 'contextMenu': currentMenuData,
                 'contextMenuRoot': rootMenuData
             });
@@ -2334,6 +2408,8 @@ var _contextMenu = __webpack_require__(/*! ./jquery/contextMenu */ "./src/js/jqu
 var _contextMenu2 = _interopRequireDefault(_contextMenu);
 
 __webpack_require__(/*! ./polyfills/element-matches */ "./src/js/polyfills/element-matches.js");
+
+__webpack_require__(/*! custom-event-polyfill */ "./node_modules/custom-event-polyfill/polyfill.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

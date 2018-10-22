@@ -67,11 +67,11 @@ export default class EventHandler {
         }
 
         // abort event if menu is visible for this trigger
-        if ($this.hasClass('context-menu-active')) {
+        if (this.classList.contains('context-menu-active')) {
             return;
         }
 
-        if (!$this.hasClass('context-menu-disabled')) {
+        if (!this.classList.contains('context-menu-disabled')) {
             // theoretically need to fire a show event at <menu>
             // http://www.whatwg.org/specs/web-apps/current-work/multipage/interactive-elements.html#context-menus
             // var evt = jQuery.Event("show", { data: data, pageX: e.pageX, pageY: e.pageY, relatedTarget: this });
@@ -171,7 +171,7 @@ export default class EventHandler {
     mouseup(e) {
         // show menu
         const $this = $(this);
-        if ($this.data('contextMenuActive') && e._contextMenuData.manager.handler.$currentTrigger && e._contextMenuData.manager.handler.$currentTrigger.length && e._contextMenuData.manager.handler.$currentTrigger.is($this) && !$this.hasClass('context-menu-disabled')) {
+        if ($this.data('contextMenuActive') && e._contextMenuData.manager.handler.$currentTrigger && e._contextMenuData.manager.handler.$currentTrigger.length && e._contextMenuData.manager.handler.$currentTrigger.is($this) && !this.classList.contains('context-menu-disabled')) {
             e.preventDefault();
             e.stopImmediatePropagation();
             e._contextMenuData.manager.handler.$currentTrigger = $this;
@@ -724,6 +724,7 @@ export default class EventHandler {
      * @param {ContextMenuEvent|JQuery.Event} e
      */
     itemMouseenter(e) {
+        console.log('itemmouseenter');
         let $this = $(this);
         let data = $this.data();
         let currentMenuData = data.contextMenu;
@@ -740,13 +741,13 @@ export default class EventHandler {
         // make sure only one item is selected
         // @todo let targetMenu = (currentMenuData.$menu ? currentMenuData : rootMenuData);
 
-        if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
+        if (this.classList.contains(rootMenuData.classNames.disabled) || this.classList.contains(rootMenuData.classNames.notSelectable)) {
             currentMenuData.$selected = null;
             return;
         }
 
         e.stopPropagation();
-        EventListener.triggerEvent(this, 'contextmenu:focus', {data: currentMenuData, originalEvent: e}, false);
+        EventListener.triggerEvent(this, 'contextmenu:focus', {data: currentMenuData, originalEvent: e}, true);
     }
 
     /**
@@ -862,7 +863,7 @@ export default class EventHandler {
         const currentMenuData = data.contextMenu;
         const rootMenuData = data.contextMenuRoot;
 
-        if ($this.hasClass(rootMenuData.classNames.disabled) || $this.hasClass(rootMenuData.classNames.notSelectable)) {
+        if (this.classList.contains(rootMenuData.classNames.disabled) || this.classList.contains(rootMenuData.classNames.notSelectable)) {
             return;
         }
 

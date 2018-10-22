@@ -81,7 +81,7 @@ export default class Operations {
             .addClass('context-menu-active');
 
         // register key handler
-        menuData.listeners.document.off('keydown').on('keydown', menuData.manager.handler.key);
+        menuData.listeners.baseElement.off('keydown').on('keydown', menuData.manager.handler.key);
         // register autoHide handler
         if (menuData.autoHide) {
             // mouse position handler
@@ -161,7 +161,7 @@ export default class Operations {
         if (menuData.listeners.contextMenuAutoHide) {
             menuData.listeners.contextMenuAutoHide.destruct();
         }
-        menuData.listeners.document.off('keydown');
+        menuData.listeners.baseElement.off('keydown');
 
         // hide menu
         if (menuData.$menu) {
@@ -210,10 +210,23 @@ export default class Operations {
         }
 
         // create contextMenu
-        currentMenuData.$menu = $('<ul class="context-menu-list"></ul>').addClass(currentMenuData.className || '').data({
+        let menuElement = document.createElement('ul');
+        menuElement.className = 'context-menu-list ' + (currentMenuData.className || '');
+
+        currentMenuData.menuElement = menuElement;
+        menuElement.contextMenu = currentMenuData;
+        menuElement.contextMenuRoot = currentMenuData;
+
+        currentMenuData.$menu = $(menuElement).addClass(currentMenuData.className || '').data({
             'contextMenu': currentMenuData,
             'contextMenuRoot': rootMenuData
         });
+
+        // create contextMenu
+        // currentMenuData.$menu = $('<ul class="context-menu-list"></ul>').addClass(currentMenuData.className || '').data({
+        //     'contextMenu': currentMenuData,
+        //     'contextMenuRoot': rootMenuData
+        // });
 
         ['callbacks', 'commands', 'inputs'].forEach((k) => {
             currentMenuData[k] = {};

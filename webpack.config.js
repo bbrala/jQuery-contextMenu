@@ -25,12 +25,15 @@ Date: ${(new Date()).toISOString()}
 `;
 
 module.exports = {
-    entry: './src/js/contextmenu.js',
+    entry: {
+        'jquery-contextMenu': './src/js/jquery-contextmenu.js',
+        'contextmenu': './src/js/contextmenu.js'
+    },
     devtool: '#source-map',
     mode: 'production',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'jquery.contextMenu.min.js',
+        filename: '[name].min.js',
         library: 'ContextMenu',
         libraryTarget: 'var'
     },
@@ -87,7 +90,7 @@ module.exports = {
         //     entryOnly: true // if true, the banner will only be added to the entry chunks
         // }),
         new ExtractTextPlugin({
-            filename: 'jquery.contextMenu.min.css'
+            filename: '[name].min.css'
         }),
         new OptimizeCssAssetsPlugin({
             // IMPORTANT: only minify asset ends with .min.css

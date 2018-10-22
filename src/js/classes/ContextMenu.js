@@ -123,7 +123,7 @@ export default class ContextMenu {
                     return true;
                 }
 
-                // Is this menu equest to the context called from
+                // Is this menu request to the context called from
                 if (!$(context).is(o.selector)) {
                     return true;
                 }
@@ -214,7 +214,7 @@ export default class ContextMenu {
         }
         if (typeof options.listeners === 'undefined') {
             options.listeners = {
-                document: new EventListener(document, options)
+                baseElement: new EventListener(document, options)
             };
         }
 
@@ -229,7 +229,7 @@ export default class ContextMenu {
             const itemClick = options.itemClickEvent === 'click' ? 'click' : 'mouseup';
 
             // make sure item click is registered first
-            options.listeners.document
+            options.listeners.baseElement
                 .on('contextmenu:hide', '.context-menu-list', this.handler.hideMenu)
                 .on('prevcommand', '.context-menu-list', this.handler.prevItem)
                 .on('nextcommand', '.context-menu-list', this.handler.nextItem)
@@ -237,7 +237,7 @@ export default class ContextMenu {
                 .on('mouseleave', '.context-menu-list', this.handler.menuMouseleave)
                 .on('mouseenter', '.context-menu-list', this.handler.menuMouseenter);
 
-            options.listeners.document
+            options.listeners.baseElement
                 .on(itemClick, '.context-menu-item', this.handler.itemClick)
                 .on('contextmenu:focus', '.context-menu-item', this.handler.focusItem)
                 .on('contextmenu:blur', '.context-menu-item', this.handler.blurItem)
@@ -245,7 +245,7 @@ export default class ContextMenu {
                 .on('mouseleave', '.context-menu-item', this.handler.itemMouseleave)
                 .on('mouseenter', '.context-menu-item', this.handler.itemMouseenter);
 
-            options.listeners.document.on('mouseup', '.context-menu-input', this.handler.inputClick);
+            options.listeners.baseElement.on('mouseup', '.context-menu-input', this.handler.inputClick);
 
             this.initialized = true;
         }
@@ -253,7 +253,7 @@ export default class ContextMenu {
         if (options._hasContext) {
             options.listeners.context = new EventListener(options.context.get(0), options);
         } else {
-            options.listeners.context = options.listeners.document;
+            options.listeners.context = options.listeners.baseElement;
         }
 
         // engage native contextmenu event
@@ -443,7 +443,7 @@ export default class ContextMenu {
      *
      * @return {boolean} Whether the default action of the event may be executed, ie. returns false if preventDefault() has been called.
      */
-    static triggerEvent(el, eventName, data = {}, bubbles = true, cancelable = true) {
+    triggerEvent(el, eventName, data = {}, bubbles = true, cancelable = true) {
         const event = new CustomEvent(eventName, {detail: data, bubbles: bubbles, cancelable: cancelable});
         el.dispatchEvent(event);
         return !event.defaultPrevented;
@@ -475,7 +475,7 @@ export default class ContextMenu {
         });
     }
 
-    getMenuBySelector(selector){
+    getMenuBySelector(selector) {
         return Object.values(this.menus).find((menu) => menu.selector === selector);
     }
 }
