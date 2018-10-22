@@ -26,7 +26,7 @@ Date: ${(new Date()).toISOString()}
 
 module.exports = {
     entry: {
-        'jquery-contextMenu': './src/js/jquery-contextmenu.js',
+        'jquery.contextMenu': './src/js/jquery.contextmenu.js',
         'contextmenu': './src/js/contextmenu.js'
     },
     devtool: '#source-map',

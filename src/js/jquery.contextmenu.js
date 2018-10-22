@@ -5,6 +5,7 @@ import ItemTypes from './classes/ItemTypes';
 import elementFunction from './jquery/contextMenu';
 import './polyfills/element-matches';
 import 'custom-event-polyfill';
+import 'classlist-polyfill';
 
 /**
  * The jQuery namespace.
